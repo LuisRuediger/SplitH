@@ -1,29 +1,35 @@
-<div class="example-container">
-  <mat-form-field>
-    <mat-label>Digite seu e-mail</mat-label>
-    <input
-      matInput
-      placeholder="email@examplo.com"
-      [formControl]="email"
-      (blur)="updateErrorMessage()"
-      required
-    />
-    @if (email.invalid) {
-      <mat-error>{{errorMessage()}}</mat-error>
-    }
-  </mat-form-field>
+<div class="container">
+  <div class="form-container">
+      <div class="logo">
+        <i class="pi pi-chart-line" style="font-size: 2.5rem; color: green;"></i>
+        <span>SpliH</span>
+      </div>
+      <div class="welcome-message">
+        <h2>Bem-vindo de volta!</h2>
+        <p>Faça login para acessar o seu painel financeiro</p>
+      </div>
+      <form [formGroup]="exampleForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 w-full sm:w-56">
+        <div class="flex flex-col gap-1">
+            <input pInputText type="text" id="username" placeholder="Username" formControlName="username" [invalid]="isInvalid('username')" />
+            @if (isInvalid('username')) {
+                <p-message severity="error" size="small" variant="simple">Username is required.</p-message>
+            }
+        </div>
+        <div class="flex flex-col gap-1">
+            <input pInputText type="email" id="email" placeholder="Email" formControlName="email" [invalid]="isInvalid('email')" />
+            @if (isInvalid('email')) {
+                @if (exampleForm.get('email')?.errors?.['required']) {
+                    <p-message severity="error" size="small" variant="simple">Email is required.</p-message>
+                }
+                @if (exampleForm.get('email')?.errors?.['email']) {
+                    <p-message severity="error" size="small" variant="simple">Please enter a valid email.</p-message>
+                }
+            }
+        </div>
+        <button pButton severity="secondary" type="submit"><span pButtonLabel>Submit</span></button>
+    </form>
+  </div>
+  <div class="side">
 
-  <mat-form-field>
-    <mat-label>Enter your password</mat-label>
-    <input matInput [type]="hide() ? 'password' : 'text'" />
-    <button
-      matIconButton
-      matSuffix
-      (click)="clickEvent($event)"
-      [attr.aria-label]="'Hide password'"
-      [attr.aria-pressed]="hide()"
-    >
-      <mat-icon>{{hide() ? 'visibility_off' : 'visibility'}}</mat-icon>
-    </button>
-  </mat-form-field>
+  </div>
 </div>

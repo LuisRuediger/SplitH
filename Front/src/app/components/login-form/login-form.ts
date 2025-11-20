@@ -1,42 +1,45 @@
-import {ChangeDetectionStrategy, Component, signal} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInputModule} from '@angular/material/input';
+import {Component, inject} from '@angular/core';
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { ToastModule } from 'primeng/toast';
 import {merge} from 'rxjs';
-import {MatIconModule} from '@angular/material/icon';
 
 
 @Component({
   selector: 'app-login-form',
-  imports: [MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule, MatIconModule],
+  imports: [ReactiveFormsModule, InputTextModule, ButtonModule, ToastModule, MessageModule],
+  providers: [MessageService],
   templateUrl: './login-form.html',
   styleUrl: './login-form.scss'
 })
 export class LoginForm {
-  readonly email = new FormControl('', [Validators.required, Validators.email]);
+    messageService = inject(MessageService);
 
-  errorMessage = signal('');
+    exampleForm: FormGroup;
 
-  constructor() {
-    merge(this.email.statusChanges, this.email.valueChanges)
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.updateErrorMessage());
-  }
+    formSubmitted = false;
 
-  updateErrorMessage() {
-    if (this.email.hasError('required')) {
-      this.errorMessage.set('You must enter a value');
-    } else if (this.email.hasError('email')) {
-      this.errorMessage.set('Not a valid email');
-    } else {
-      this.errorMessage.set('');
+    constructor(private fb: FormBuilder) {
+        this.exampleForm = this.fb.group({
+            username: ['', Validators.required],
+            email: ['', [Validators.required, Validators.email]]
+        });
     }
-  }
 
-  hide = signal(true);
-  clickEvent(event: MouseEvent) {
-    this.hide.set(!this.hide());
-    event.stopPropagation();
-  }
+    onSubmit() {
+        this.formSubmitted = true;
+        if (this.exampleForm.valid) {
+            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Form Submitted', life: 3000 });
+            this.exampleForm.reset();
+            this.formSubmitted = false;
+        }
+    }
+
+    isInvalid(controlName: string) {
+        const control = this.exampleForm.get(controlName);
+        return control?.invalid && (control.touched || this.formSubmitted);
+    }
 }
