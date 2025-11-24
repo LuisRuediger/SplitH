@@ -1,7 +1,7 @@
 <div class="container">
   <div class="form-container">
       <div class="logo">
-        <i class="pi pi-chart-line" style="font-size: 2.5rem; color: green;"></i>
+        <i class="pi pi-chart-line" style="font-size: 2rem; color: white;"></i>
         <span>SpliH</span>
       </div>
       <div class="welcome-message">
@@ -26,7 +26,19 @@
                 }
             }
         </div>
+        <div class="card flex justify-center">
+          <p-checkbox [binary]="true" />
+          <span>Lembrar senha</span>
+      </div>
+      <div class="resetPassword">
+        <a href="">Esqueceu a senha</a>
+      </div>
         <button pButton severity="secondary" type="submit"><span pButtonLabel>Submit</span></button>
+
+        <div class="register">
+          <p>Não tem uma conta?</p>
+          <a href="">Criar conta</a>
+        </div>
     </form>
   </div>
   <div class="side">

@@ -5,12 +5,12 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { ToastModule } from 'primeng/toast';
-import {merge} from 'rxjs';
+import { Checkbox } from 'primeng/checkbox';
 
 
 @Component({
   selector: 'app-login-form',
-  imports: [ReactiveFormsModule, InputTextModule, ButtonModule, ToastModule, MessageModule],
+  imports: [ReactiveFormsModule, InputTextModule, ButtonModule, ToastModule, MessageModule, Checkbox],
   providers: [MessageService],
   templateUrl: './login-form.html',
   styleUrl: './login-form.scss'
@@ -42,4 +42,8 @@ export class LoginForm {
         const control = this.exampleForm.get(controlName);
         return control?.invalid && (control.touched || this.formSubmitted);
     }
+}
+
+export class CheckboxBasicDemo {
+  checked: boolean = false;
 }
