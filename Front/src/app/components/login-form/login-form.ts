@@ -1,5 +1,5 @@
 import {Component, inject} from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -10,7 +10,7 @@ import { Checkbox } from 'primeng/checkbox';
 
 @Component({
   selector: 'app-login-form',
-  imports: [ReactiveFormsModule, InputTextModule, ButtonModule, ToastModule, MessageModule, Checkbox],
+  imports: [ReactiveFormsModule, FormsModule, InputTextModule, ButtonModule, ToastModule, MessageModule, Checkbox],
   providers: [MessageService],
   templateUrl: './login-form.html',
   styleUrl: './login-form.scss'
@@ -22,9 +22,11 @@ export class LoginForm {
 
     formSubmitted = false;
 
+    value3: string | undefined;
+
     constructor(private fb: FormBuilder) {
         this.exampleForm = this.fb.group({
-            username: ['', Validators.required],
+            senha: ['', Validators.required],
             email: ['', [Validators.required, Validators.email]]
         });
     }
@@ -42,8 +44,4 @@ export class LoginForm {
         const control = this.exampleForm.get(controlName);
         return control?.invalid && (control.touched || this.formSubmitted);
     }
-}
-
-export class CheckboxBasicDemo {
-  checked: boolean = false;
 }

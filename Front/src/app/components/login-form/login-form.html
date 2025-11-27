@@ -1,47 +1,68 @@
 <div class="container">
-  <div class="form-container">
-      <div class="logo">
-        <i class="pi pi-chart-line" style="font-size: 2rem; color: white;"></i>
-        <span>SpliH</span>
-      </div>
-      <div class="welcome-message">
-        <h2>Bem-vindo de volta!</h2>
-        <p>Faça login para acessar o seu painel financeiro</p>
-      </div>
-      <form [formGroup]="exampleForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 w-full sm:w-56">
-        <div class="flex flex-col gap-1">
-            <input pInputText type="text" id="username" placeholder="Username" formControlName="username" [invalid]="isInvalid('username')" />
-            @if (isInvalid('username')) {
-                <p-message severity="error" size="small" variant="simple">Username is required.</p-message>
-            }
+      <div class="logo-container">
+        <div class="logo-icon">
+          <div class="logo-rouded">
+            <i class="pi pi-dollar" style="font-size: 1rem; font-weight: bold; color: white;"></i>
+          </div>
         </div>
-        <div class="flex flex-col gap-1">
-            <input pInputText type="email" id="email" placeholder="Email" formControlName="email" [invalid]="isInvalid('email')" />
+        <h2>Bem-vindo de volta!</h2>
+        <p>Acesse seu controle financeiro</p>
+      </div>
+
+      <form [formGroup]="exampleForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 w-full sm:w-56">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <div class="input-wrapper">
+            <span>
+              <i class="pi pi-envelope"></i>
+            </span>
+            <input pInputText type="email" id="email" placeholder="seu@email.com" formControlName="email" [invalid]="isInvalid('email')" />
             @if (isInvalid('email')) {
                 @if (exampleForm.get('email')?.errors?.['required']) {
-                    <p-message severity="error" size="small" variant="simple">Email is required.</p-message>
+                    <p-message severity="error" size="small" variant="simple">Email é obrigatório.</p-message>
                 }
                 @if (exampleForm.get('email')?.errors?.['email']) {
-                    <p-message severity="error" size="small" variant="simple">Please enter a valid email.</p-message>
+                    <p-message severity="error" size="small" variant="simple">Por favor insira um Email válido.</p-message>
                 }
             }
+          </div>
         </div>
-        <div class="card flex justify-center">
-          <p-checkbox [binary]="true" />
-          <span>Lembrar senha</span>
-      </div>
-      <div class="resetPassword">
-        <a href="">Esqueceu a senha</a>
-      </div>
-        <button pButton severity="secondary" type="submit"><span pButtonLabel>Submit</span></button>
 
-        <div class="register">
-          <p>Não tem uma conta?</p>
-          <a href="">Criar conta</a>
+        <div class="form-group">
+            <label for="senha">Senha</label>
+            <div class="input-wrapper">
+              <span>
+                <i class="pi pi-lock"></i>
+              </span>
+              <input pInputText type="text" id="senha" placeholder="••••••••" formControlName="senha" [invalid]="isInvalid('senha')" />
+              @if (isInvalid('senha')) {
+                  <p-message severity="error" size="small" variant="simple">senha é obrigatória.</p-message>
+              }
+            </div>
         </div>
+
+        <div class="options-group">
+            <label class="checkbox-wrapper">
+                <p-checkbox [binary]="true" />
+                <span class="checkbox-text">Manter conectado</span>
+            </label>
+            <a href="#" onclick="alert('Funcionalidade de recuperação será implementada'); return false;">Esqueci minha senha</a>
+        </div>
+
+        <button pButton severity="secondary" type="submit"><span pButtonLabel>Entrar</span></button>
     </form>
-  </div>
-  <div class="side">
+
+    <div class="divider">
+      <span>ou</span>
+    </div>
+
+    <div class="signup-link">
+        Não tem uma conta? <a href="#" onclick="alert('Funcionalidade de cadastro será implementada'); return false;">Cadastre-se</a>
+    </div>
+
+    <div class="security-badge">
+      <i class="pi pi-shield"></i>
+      Seus dados estão protegidos
+    </div>
 
   </div>
-</div>
