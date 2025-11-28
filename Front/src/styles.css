@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "primeicons/primeicons.css";
+
+@theme {
+  /* Verde da marca */
+  --color-brand-dark: #00875F;
+  --color-brand: #00B37E;
+
+  /* Backgrounds */
+  --color-background: #121214;
+  --color-surface: #202024;
+  --color-input: #121214;
+
+  /* Tipografia - Cores de texto */
+  --color-title: #E1E1E6;
+  --color-text: #C4C4CC;
+  --color-secondary: #8D8D99;
+}

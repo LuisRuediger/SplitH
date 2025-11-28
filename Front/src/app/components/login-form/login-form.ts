@@ -13,7 +13,7 @@ import { Checkbox } from 'primeng/checkbox';
   imports: [ReactiveFormsModule, FormsModule, InputTextModule, ButtonModule, ToastModule, MessageModule, Checkbox],
   providers: [MessageService],
   templateUrl: './login-form.html',
-  styleUrl: './login-form.scss'
+  styleUrl: './login-form.css'
 })
 export class LoginForm {
     messageService = inject(MessageService);
