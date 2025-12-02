@@ -15,4 +15,18 @@
   --color-title: #E1E1E6;
   --color-text: #C4C4CC;
   --color-secondary: #8D8D99;
+
+  /* Animação login form */
+  --animate-slideUp: slideUp 0.5s ease-out;
+
+  @keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
 }

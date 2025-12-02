@@ -1,22 +1,41 @@
-<div class="container">
-      <div class="logo-container">
-        <div class="logo-icon">
-          <div class="logo-rouded">
-            <i class="pi pi-dollar" style="font-size: 1rem; font-weight: bold; color: white;"></i>
+<div class="w-full max-w-96 py-10 px-9 text-center bg-surface border border-zinc-400/10 rounded-2xl shadow-2xl animate-slideUp">
+      <div class="mb-8 flex items-center justify-center flex-col">
+          <div class="w-16 h-16 mb-4 rounded-2xl bg-linear-to-br from-brand-dark to-brand flex items-center justify-center">
+            <i class="pi pi-dollar" style="font-size: 1.5rem; font-weight: bold; color: white;"></i>
           </div>
-        </div>
-        <h2>Bem-vindo de volta!</h2>
-        <p>Acesse seu controle financeiro</p>
+        <h2 class="mb-2 text-2xl text-title ">
+          Bem-vindo de volta!
+        </h2>
+        <p class="text-sm text-secondary">
+          Acesse seu controle financeiro
+        </p>
       </div>
 
-      <form [formGroup]="exampleForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 w-full sm:w-56">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <div class="input-wrapper">
-            <span>
+      <form
+        [formGroup]="exampleForm"
+        (ngSubmit)="onSubmit()"
+        class="mb-5"
+      >
+        <div class="mb-5">
+          <label
+            for="email"
+            class="block text-sm text-left font-medium text-text"
+          >
+            Email
+          </label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary">
               <i class="pi pi-envelope"></i>
             </span>
-            <input pInputText type="email" id="email" placeholder="seu@email.com" formControlName="email" [invalid]="isInvalid('email')" />
+            <input
+              pInputText
+              type="email"
+              id="email"
+              placeholder="seu@email.com"
+              formControlName="email"
+              [invalid]="isInvalid('email')"
+              class="w-full custom-input"
+            />
             @if (isInvalid('email')) {
                 @if (exampleForm.get('email')?.errors?.['required']) {
                     <p-message severity="error" size="small" variant="simple">Email é obrigatório.</p-message>
@@ -28,28 +47,54 @@
           </div>
         </div>
 
-        <div class="form-group">
-            <label for="senha">Senha</label>
-            <div class="input-wrapper">
-              <span>
+        <div class="mb-3">
+            <label
+              for="senha"
+              class="block text-sm text-left font-medium text-text"
+            >
+              Senha
+            </label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary">
                 <i class="pi pi-lock"></i>
               </span>
-              <input pInputText type="text" id="senha" placeholder="••••••••" formControlName="senha" [invalid]="isInvalid('senha')" />
+              <input
+                pInputText
+                type="password"
+                id="senha"
+                placeholder="••••••••"
+                formControlName="senha"
+                [invalid]="isInvalid('senha')"
+                class="custom-input w-full placeholder:text-secondary"
+              />
               @if (isInvalid('senha')) {
                   <p-message severity="error" size="small" variant="simple">senha é obrigatória.</p-message>
               }
             </div>
         </div>
 
-        <div class="options-group">
-            <label class="checkbox-wrapper">
-                <p-checkbox [binary]="true" />
-                <span class="checkbox-text">Manter conectado</span>
+        <div class="mb-6 flex justify-between items-center flex-row">
+            <label class="flex justify-center items-center cursor-pointer">
+                <p-checkbox [binary]="true"/>
+                <span class="ml-1 text-sm text-text">
+                  Manter conectado
+                </span>
             </label>
-            <a href="#" onclick="alert('Funcionalidade de recuperação será implementada'); return false;">Esqueci minha senha</a>
+            <a
+              href="#"
+              onclick="alert('Funcionalidade de recuperação será implementada'); return false;"
+              class="text-xs font-medium no-underline text-brand transition-colors duration-150 ease-in hover:text-brand-dark"
+            >
+              Esqueci minha senha
+            </a>
         </div>
 
-        <button pButton severity="secondary" type="submit"><span pButtonLabel>Entrar</span></button>
+        <button
+          type="submit"
+          class="w-full p-3.5 rounded-lg cursor-pointer font-semibold text-white bg-linear-to-br from-brand-dark to-brand hover:bg-none hover:bg-brand-dark"
+        >
+          Entrar
+        </button>
     </form>
 
     <div class="divider">
