@@ -97,16 +97,25 @@
         </button>
     </form>
 
-    <div class="divider">
+    <div class="my-6 flex items-center gap-4 text-sm text-secondary">
+      <span class="content-[''] h-px flex-1 bg-input"></span>
       <span>ou</span>
+      <span class="content-[''] h-px flex-1 bg-input after:content-['']"></span>
     </div>
 
-    <div class="signup-link">
-        Não tem uma conta? <a href="#" onclick="alert('Funcionalidade de cadastro será implementada'); return false;">Cadastre-se</a>
+    <div class="mb-6 text-center text-sm text-text">
+        Não tem uma conta?
+        <a
+          href="#"
+          onclick="alert('Funcionalidade de cadastro será implementada'); return false;"
+          class="font-semibold text-brand transition-colors duration-150 ease-in hover:text-brand-dark"
+        >
+          Cadastre-se
+        </a>
     </div>
 
-    <div class="security-badge">
-      <i class="pi pi-shield"></i>
+    <div class="flex items-center justify-center py-6 text-xs text-secondary border-t border-background ">
+      <i class="pi pi-shield w-4 h-4 mx-1.5" style="color: #00B37E"></i>
       Seus dados estão protegidos
     </div>
   </div>
