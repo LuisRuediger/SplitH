@@ -18,6 +18,8 @@ import { Checkbox } from 'primeng/checkbox';
 export class LoginForm {
     messageService = inject(MessageService);
 
+    isLoading = false;
+
     exampleForm: FormGroup;
 
     formSubmitted = false;
@@ -33,10 +35,16 @@ export class LoginForm {
 
     onSubmit() {
         this.formSubmitted = true;
+
         if (this.exampleForm.valid) {
-            this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Form Submitted', life: 3000 });
+            this.isLoading = true;
             this.exampleForm.reset();
             this.formSubmitted = false;
+
+            setTimeout(() => {
+              console.log("Formulário enviado!");
+              this.isLoading = false;
+            }, 2000)
         }
     }
 

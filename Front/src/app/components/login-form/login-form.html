@@ -90,10 +90,20 @@
         </div>
 
         <button
+          [disabled]="isLoading"
           type="submit"
-          class="w-full p-3.5 rounded-lg cursor-pointer font-semibold text-white bg-linear-to-br from-brand-dark to-brand hover:bg-none hover:bg-brand-dark"
+          class="w-full p-3.5 flex items-center justify-center gap-3 rounded-lg cursor-pointer font-semibold text-sm text-white bg-brand transition-colors ease-in hover:bg-brand-dark disabled:bg-secondary disabled:cursor-not-allowed"
         >
-          Entrar
+          <span>
+            {{ isLoading ? "Entrando..." : "Entrar" }}
+          </span>
+
+          @if (isLoading) {
+            <span class="w-4 h-4">
+              <i class="pi pi-spin pi-spinner text-base"></i>
+            </span>
+          }
+
         </button>
     </form>
 
