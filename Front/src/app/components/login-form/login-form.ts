@@ -1,42 +1,55 @@
-import {ChangeDetectionStrategy, Component, signal} from '@angular/core';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {FormControl, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatInputModule} from '@angular/material/input';
-import {merge} from 'rxjs';
-import {MatIconModule} from '@angular/material/icon';
+import {Component, inject} from '@angular/core';
+import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
+import { MessageService } from 'primeng/api';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { ToastModule } from 'primeng/toast';
+import { Checkbox } from 'primeng/checkbox';
 
 
 @Component({
   selector: 'app-login-form',
-  imports: [MatFormFieldModule, MatInputModule, FormsModule, ReactiveFormsModule, MatIconModule],
+  imports: [ReactiveFormsModule, FormsModule, InputTextModule, ButtonModule, ToastModule, MessageModule, Checkbox],
+  providers: [MessageService],
   templateUrl: './login-form.html',
-  styleUrl: './login-form.scss'
+  styleUrl: './login-form.css'
 })
 export class LoginForm {
-  readonly email = new FormControl('', [Validators.required, Validators.email]);
+    messageService = inject(MessageService);
 
-  errorMessage = signal('');
+    isLoading = false;
 
-  constructor() {
-    merge(this.email.statusChanges, this.email.valueChanges)
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.updateErrorMessage());
-  }
+    exampleForm: FormGroup;
 
-  updateErrorMessage() {
-    if (this.email.hasError('required')) {
-      this.errorMessage.set('You must enter a value');
-    } else if (this.email.hasError('email')) {
-      this.errorMessage.set('Not a valid email');
-    } else {
-      this.errorMessage.set('');
+    formSubmitted = false;
+
+    value3: string | undefined;
+
+    constructor(private fb: FormBuilder) {
+        this.exampleForm = this.fb.group({
+            senha: ['', Validators.required],
+            email: ['', [Validators.required, Validators.email]]
+        });
     }
-  }
 
-  hide = signal(true);
-  clickEvent(event: MouseEvent) {
-    this.hide.set(!this.hide());
-    event.stopPropagation();
-  }
+    onSubmit() {
+        this.formSubmitted = true;
+
+        if (this.exampleForm.valid) {
+            this.isLoading = true;
+            this.exampleForm.reset();
+            this.formSubmitted = false;
+
+            setTimeout(() => {
+              console.log("Formulário enviado!");
+              this.isLoading = false;
+            }, 2000)
+        }
+    }
+
+    isInvalid(controlName: string) {
+        const control = this.exampleForm.get(controlName);
+        return control?.invalid && (control.touched || this.formSubmitted);
+    }
 }

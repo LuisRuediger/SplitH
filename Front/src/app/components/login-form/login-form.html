@@ -1,29 +1,131 @@
-<div class="example-container">
-  <mat-form-field>
-    <mat-label>Digite seu e-mail</mat-label>
-    <input
-      matInput
-      placeholder="email@examplo.com"
-      [formControl]="email"
-      (blur)="updateErrorMessage()"
-      required
-    />
-    @if (email.invalid) {
-      <mat-error>{{errorMessage()}}</mat-error>
-    }
-  </mat-form-field>
+<div class="w-full max-w-96 py-10 px-9 text-center bg-surface border border-zinc-400/10 rounded-2xl shadow-2xl animate-slideUp">
+      <div class="mb-8 flex items-center justify-center flex-col">
+          <div class="w-16 h-16 mb-4 rounded-2xl bg-linear-to-br from-brand-dark to-brand flex items-center justify-center">
+            <i class="pi pi-dollar" style="font-size: 1.5rem; font-weight: bold; color: white;"></i>
+          </div>
+        <h2 class="mb-2 text-2xl text-title ">
+          Bem-vindo de volta!
+        </h2>
+        <p class="text-sm text-secondary">
+          Acesse seu controle financeiro
+        </p>
+      </div>
 
-  <mat-form-field>
-    <mat-label>Enter your password</mat-label>
-    <input matInput [type]="hide() ? 'password' : 'text'" />
-    <button
-      matIconButton
-      matSuffix
-      (click)="clickEvent($event)"
-      [attr.aria-label]="'Hide password'"
-      [attr.aria-pressed]="hide()"
-    >
-      <mat-icon>{{hide() ? 'visibility_off' : 'visibility'}}</mat-icon>
-    </button>
-  </mat-form-field>
-</div>
+      <form
+        [formGroup]="exampleForm"
+        (ngSubmit)="onSubmit()"
+        class="mb-5"
+      >
+        <div class="mb-5">
+          <label
+            for="email"
+            class="block text-sm text-left font-medium text-text"
+          >
+            Email
+          </label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary">
+              <i class="pi pi-envelope"></i>
+            </span>
+            <input
+              pInputText
+              type="email"
+              id="email"
+              placeholder="seu@email.com"
+              formControlName="email"
+              [invalid]="isInvalid('email')"
+              class="w-full custom-input"
+            />
+            @if (isInvalid('email')) {
+                @if (exampleForm.get('email')?.errors?.['required']) {
+                    <p-message severity="error" size="small" variant="simple">Email é obrigatório.</p-message>
+                }
+                @if (exampleForm.get('email')?.errors?.['email']) {
+                    <p-message severity="error" size="small" variant="simple">Por favor insira um Email válido.</p-message>
+                }
+            }
+          </div>
+        </div>
+
+        <div class="mb-3">
+            <label
+              for="senha"
+              class="block text-sm text-left font-medium text-text"
+            >
+              Senha
+            </label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary">
+                <i class="pi pi-lock"></i>
+              </span>
+              <input
+                pInputText
+                type="password"
+                id="senha"
+                placeholder="••••••••"
+                formControlName="senha"
+                [invalid]="isInvalid('senha')"
+                class="custom-input w-full placeholder:text-secondary"
+              />
+              @if (isInvalid('senha')) {
+                  <p-message severity="error" size="small" variant="simple">senha é obrigatória.</p-message>
+              }
+            </div>
+        </div>
+
+        <div class="mb-6 flex justify-between items-center flex-row">
+            <label class="flex justify-center items-center cursor-pointer">
+                <p-checkbox [binary]="true"/>
+                <span class="ml-1 text-sm text-text">
+                  Manter conectado
+                </span>
+            </label>
+            <a
+              href="#"
+              onclick="alert('Funcionalidade de recuperação será implementada'); return false;"
+              class="text-xs font-medium no-underline text-brand transition-colors duration-150 ease-in hover:text-brand-dark"
+            >
+              Esqueci minha senha
+            </a>
+        </div>
+
+        <button
+          [disabled]="isLoading"
+          type="submit"
+          class="w-full p-3.5 flex items-center justify-center gap-3 rounded-lg cursor-pointer font-semibold text-sm text-white bg-brand transition-colors ease-in hover:bg-brand-dark disabled:bg-secondary disabled:cursor-not-allowed"
+        >
+          <span>
+            {{ isLoading ? "Entrando..." : "Entrar" }}
+          </span>
+
+          @if (isLoading) {
+            <span class="w-4 h-4">
+              <i class="pi pi-spin pi-spinner text-base"></i>
+            </span>
+          }
+
+        </button>
+    </form>
+
+    <div class="my-6 flex items-center gap-4 text-sm text-secondary">
+      <span class="content-[''] h-px flex-1 bg-input"></span>
+      <span>ou</span>
+      <span class="content-[''] h-px flex-1 bg-input after:content-['']"></span>
+    </div>
+
+    <div class="mb-6 text-center text-sm text-text">
+        Não tem uma conta?
+        <a
+          href="#"
+          onclick="alert('Funcionalidade de cadastro será implementada'); return false;"
+          class="font-semibold text-brand transition-colors duration-150 ease-in hover:text-brand-dark"
+        >
+          Cadastre-se
+        </a>
+    </div>
+
+    <div class="flex items-center justify-center py-6 text-xs text-secondary border-t border-background ">
+      <i class="pi pi-shield w-4 h-4 mx-1.5" style="color: #00B37E"></i>
+      Seus dados estão protegidos
+    </div>
+  </div>
