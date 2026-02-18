@@ -1,1 +1,217 @@
-<p>user-register works!</p>
+<p-toast />
+<div class="w-screen h-screen flex justify-center items-center bg-background">
+  <div
+    class="w-full max-w-[480px] py-10 px-9 text-center bg-surface border border-zinc-400/10 rounded-2xl shadow-2xl animate-slideUp">
+    <div class="mb-8 flex items-center justify-center flex-col">
+      <div class="w-16 h-16 mb-4 rounded-2xl bg-linear-to-br from-brand-dark to-brand flex items-center justify-center">
+        <i class="pi pi-dollar" style="font-size: 1.5rem; font-weight: bold; color: white;"></i>
+      </div>
+      <h2 class="mb-2 text-2xl text-title">
+        Crie sua conta
+      </h2>
+      <p class="text-sm text-secondary">
+        Comece a gerenciar suas finanças
+      </p>
+    </div>
+    <form
+      [formGroup]="registerForm"
+      (ngSubmit)="onSubmit()">
+
+      <div class="mb-5">
+        <label
+          for="fullName"
+          class="block text-sm text-left font-medium text-text"
+        >
+          Nome Completo
+        </label>
+        <div class="relative">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary">
+            <i class="pi pi-user"></i>
+          </span>
+          <input
+            pInputText
+            type="text"
+            id="fullName"
+            placeholder="Digite seu nome completo"
+            formControlName="fullName"
+            [invalid]="isInvalid('fullName')"
+            class="w-full custom-input"
+          />
+            @if (isInvalid('fullName')) {
+              @if (registerForm.get('fullName')?.errors?.['required']) {
+              <p-message severity="error" size="small" variant="simple">Nome é obrigatório.</p-message>
+              }
+            }
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <label
+          for="email"
+          class="block text-sm text-left font-medium text-text"
+        >
+          Email
+        </label>
+        <div class="relative">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary">
+            <i class="pi pi-envelope"></i>
+          </span>
+          <input
+            pInputText
+            type="email"
+            id="email"
+            placeholder="seu@email.com"
+            formControlName="email"
+            [invalid]="isInvalid('email')"
+            class="w-full custom-input"
+          />
+            @if (isInvalid('email')) {
+              @if (registerForm.get('email')?.errors?.['required']) {
+                <p-message severity="error" size="small" variant="simple">Email é obrigatório.</p-message>
+            }
+            @if (registerForm.get('email')?.errors?.['email']) {
+                <p-message severity="error" size="small" variant="simple">Por favor insira um Email válido.</p-message>
+              }
+            }
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <label
+         for="phone"
+         class="block text-sm text-left font-medium text-text"
+        >
+          Telefone
+        </label>
+        <div class="relative">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary">
+            <i class="pi pi-phone"></i>
+          </span>
+          <input
+            pInputText
+            type="tel"
+            id="phone"
+            placeholder="(00) 00000-0000"
+            formControlName="phone"
+            [invalid]="isInvalid('phone')"
+            class="w-full custom-input" maxlength="11"
+          />
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <label
+         for="password"
+         class="block text-sm text-left font-medium text-text"
+        >
+          Senha
+        </label>
+        <div class="relative">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary">
+            <i class="pi pi-lock"></i>
+          </span>
+          <input
+            pInputText
+            id="password"
+            placeholder="Mínimo 8 caracteres"
+            formControlName="password"
+            [invalid]="isInvalid('password')"
+            class="custom-input w-full placeholder:text-secondary"
+          />
+            @if (isInvalid('password')) {
+              @if (registerForm.get('password')?.errors?.['required']) {
+                <p-message severity="error" size="small" variant="simple">Senha é obrigatória.</p-message>
+              }
+            }
+        </div>
+      </div>
+
+      <div class="mb-5">
+        <label
+         for="confirmPassword"
+         class="block text-sm text-left font-medium text-text"
+        >
+          Confirmar Senha
+        </label>
+        <div class="relative">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary">
+            <i class="pi pi-lock"></i>
+          </span>
+          <input
+            pInputText id="confirmPassword"
+            placeholder="Digite a senha novamente"
+            formControlName="confirmPassword"
+            [invalid]="isInvalid('confirmPassword')"
+            class="custom-input w-full placeholder:text-secondary"
+          />
+            @if (isInvalid('confirmPassword') || registerForm.hasError('passwordMismatch')) {
+              @if (registerForm.get('confirmPassword')?.errors?.['required']) {
+                <p-message severity="error" size="small" variant="simple">Confirme sua senha.</p-message>
+              }
+            }
+        </div>
+      </div>
+
+      <div class="mb-6 flex justify-start items-start">
+        <label class="flex justify-start items-start cursor-pointer">
+          <p-checkbox
+            binary="true"
+            formControlName="terms"
+            [invalid]="isInvalid('terms')"
+          />
+          <span class="ml-2 text-sm text-text text-left">
+            Aceito os
+            <a href="#" onclick="alert('Termos de Uso'); return false;"
+              class="font-medium text-brand hover:text-brand-dark transition-colors">
+              Termos de Uso
+            </a>
+            e
+            <a href="#" onclick="alert('Política de Privacidade'); return false;"
+              class="font-medium text-brand hover:text-brand-dark transition-colors">
+              Política de Privacidade
+            </a>
+          </span>
+        </label>
+      </div>
+        @if (isInvalid('terms')) {
+          <div class="mb-4 -mt-4">
+            <p-message severity="error" size="small" variant="simple">Você precisa aceitar os termos.</p-message>
+          </div>
+        }
+
+
+      <button [disabled]="isLoading" type="submit"
+        class="w-full p-3.5 flex items-center justify-center gap-3 rounded-lg cursor-pointer font-semibold text-sm text-white bg-brand transition-colors ease-in hover:bg-brand-dark disabled:bg-secondary disabled:cursor-not-allowed">
+        <span>
+          {{ isLoading ? "Cadastrando..." : "Criar Conta" }}
+        </span>
+
+        @if (isLoading) {
+        <span class="w-4 h-4">
+          <i class="pi pi-spin pi-spinner text-base"></i>
+        </span>
+        }
+      </button>
+
+    </form>
+
+    <div class="my-6 flex items-center gap-4 text-sm text-secondary">
+      <span class="content-[''] h-px flex-1 bg-input"></span>
+      <span>ou</span>
+      <span class="content-[''] h-px flex-1 bg-input after:content-['']"></span>
+    </div>
+
+    <div class="mb-6 text-center text-sm text-text">
+      Já tem uma conta?
+      <a href="#" onclick="alert('Navegando para login'); return false;"
+        class="font-semibold text-brand transition-colors duration-150 ease-in hover:text-brand-dark">
+        Fazer login
+      </a>
+    </div>
+
+    <div class="flex items-center justify-center py-6 text-xs text-secondary border-t border-background">
+      <i class="pi pi-shield w-4 h-4 mx-1.5" style="color: #00B37E"></i>
+      Seus dados estão protegidos
+    </div>
+  </div>
+</div>
