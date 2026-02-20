@@ -157,6 +157,9 @@
               @if (registerForm.get('confirmPassword')?.errors?.['required']) {
                 <p-message severity="error" size="small" variant="simple">Confirme sua senha.</p-message>
               }
+              @if (registerForm.hasError('passwordMismatch')) {
+                <p-message severity="error" size="small" variant="simple">As senhas não são iguais.</p-message>
+              }
             }
         </div>
       </div>

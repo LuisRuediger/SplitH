@@ -30,8 +30,15 @@ export class UserRegister {
         phone: ['', [Validators.required]],
         password: ['', [Validators.required, Validators.minLength(8)]],
         confirmPassword: ['', [Validators.required]],
-        terms: ['', [Validators.required]]
-      });
+        terms: ['', [Validators.required]],
+      }, { validators: this.passwordMatchValidator});
+    }
+
+    passwordMatchValidator(group: FormGroup) {
+      const password = group.get('password')?.value;
+      const confirmPassword = group.get('confirmPassword')?.value;
+
+      return password === confirmPassword ? null : { passwordMismatch: true };
     }
 
     onSubmit() {
