@@ -96,6 +96,12 @@
             [invalid]="isInvalid('phone')"
             class="w-full custom-input" maxlength="11"
           />
+
+          @if (isInvalid('phone')) {
+            @if (registerForm.get('phone')?.errors?.['required']) {
+              <p-message severity="error" size="small" variant="simple">Telefone é obrigatório</p-message>
+            }
+          }
         </div>
       </div>
 
