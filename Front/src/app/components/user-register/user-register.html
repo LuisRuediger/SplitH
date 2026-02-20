@@ -122,6 +122,9 @@
               @if (registerForm.get('password')?.errors?.['required']) {
                 <p-message severity="error" size="small" variant="simple">Senha é obrigatória.</p-message>
               }
+              @if (registerForm.get('password')?.errors?.['minlength']) {
+                <p-message severity="error" size="small" variant="simple">Senha deve ter no mínimo 8 caracteres.</p-message>
+              }
             }
         </div>
       </div>
