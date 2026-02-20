@@ -1,6 +1,6 @@
 import {Component, inject} from '@angular/core';
 import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -12,7 +12,7 @@ import { Checkbox } from 'primeng/checkbox';
 @Component({
   selector: 'app-login-form',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, InputTextModule, ButtonModule, ToastModule, MessageModule, Checkbox],
+  imports: [ReactiveFormsModule, FormsModule, InputTextModule, ButtonModule, ToastModule, MessageModule, Checkbox, RouterLink],
   providers: [MessageService],
   templateUrl: './login-form.html',
   styleUrl: './login-form.css'
@@ -20,7 +20,7 @@ import { Checkbox } from 'primeng/checkbox';
 export class LoginForm {
     messageService = inject(MessageService);
     private router = inject(Router);
-    
+
     isLoading = false;
     exampleForm: FormGroup;
     formSubmitted = false;
@@ -41,14 +41,14 @@ export class LoginForm {
             // Simulação de login
             setTimeout(() => {
               console.log("Login realizado com sucesso!");
-              
+
               this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Login realizado!' });
-              
+
               this.isLoading = false;
 
               // 3. Navega para o Dashboard após o sucesso
-              this.router.navigate(['/dashboard']); 
-              
+              this.router.navigate(['/dashboard']);
+
             }, 2000);
         }
     }
