@@ -6,12 +6,12 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-user-register',
   standalone: true,
-  imports: [MessageModule, ToastModule, ButtonModule, InputTextModule, ReactiveFormsModule, CheckboxModule],
+  imports: [MessageModule, ToastModule, ButtonModule, InputTextModule, ReactiveFormsModule, CheckboxModule, RouterLink],
   providers: [MessageService],
   templateUrl: './user-register.html',
   styleUrl: './user-register.css'
