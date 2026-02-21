@@ -10,9 +10,17 @@ export const appConfig: ApplicationConfig = {
         provideRouter(routes), // 3. Adicione aqui para ativar a navegação!
         provideAnimationsAsync(),
         providePrimeNG({
+
             theme: {
-                preset: Aura
-            }
+                preset: Aura,
+                options: {
+                    prefix: 'p',
+                    darkModeSelector: 'system',
+                    cssLayer: false
+                }
+            },
+
+            ripple: true
         })
     ]
 };

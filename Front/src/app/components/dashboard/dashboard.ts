@@ -7,12 +7,14 @@ import { BadgeModule } from 'primeng/badge';
 import { AvatarModule } from 'primeng/avatar';
 import { RippleModule } from 'primeng/ripple';
 import { MenuItem } from 'primeng/api';
+import { ButtonModule, Button } from 'primeng/button';
+
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   // Importante: Todos os módulos que o HTML usa devem estar aqui
-  imports: [CommonModule, MenuModule, BadgeModule, AvatarModule, RippleModule],
+  imports: [CommonModule, MenuModule, BadgeModule, AvatarModule, RippleModule, ButtonModule],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
