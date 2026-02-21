@@ -1,32 +1,34 @@
 @import "tailwindcss";
 @import "primeicons/primeicons.css";
+@import "tailwindcss-primeui";
 
-@theme {
-  /* Verde da marca */
-  --color-brand-dark: #00875F;
-  --color-brand: #00B37E;
+:root {
+    /* Verde da marca */
+    --color-brand-dark: #00875F;
+    --color-brand: #00B37E;
 
-  /* Backgrounds */
-  --color-background: #121214;
-  --color-surface: #202024;
-  --color-input: #121214;
+    /* Backgrounds */
+    --color-background: #121214;
+    --color-surface: #202024;
+    --color-input: #121214;
 
-  /* Tipografia - Cores de texto */
-  --color-title: #E1E1E6;
-  --color-text: #C4C4CC;
-  --color-secondary: #8D8D99;
+    /* Tipografia - Cores de texto */
+    --color-title: #E1E1E6;
+    --color-text: #C4C4CC;
+    --color-secondary: #8D8D99;
 
-  /* Animação login form */
-  --animate-slideUp: slideUp 0.5s ease-out;
+    /* Animação login form */
+    --animate-slideUp: slideUp 0.5s ease-out;
+}
 
-  @keyframes slideUp {
+@keyframes slideUp {
     from {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
-}
 }
