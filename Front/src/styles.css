@@ -2,7 +2,7 @@
 @import "primeicons/primeicons.css";
 @import "tailwindcss-primeui";
 
-:root {
+@theme {
     /* Verde da marca */
     --color-brand-dark: #00875F;
     --color-brand: #00B37E;
