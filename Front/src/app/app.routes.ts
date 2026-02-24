@@ -1,14 +1,24 @@
 import { Routes } from '@angular/router';
-
-// 1. Importação dos componentes
 import { LoginForm } from './components/login-form/login-form';
 import { UserRegister } from './components/user-register/user-register';
+import { Dashboard } from './components/dashboard/dashboard';
+import { MainLayout } from './components/main-layout/main-layout'; // Importe o layout
 
-// 2. Exportação direta da constante 'routes'
 export const routes: Routes = [
+  // Rotas PÚBLICAS (Página limpa, ocupam a tela toda)
   { path: 'login', component: LoginForm },
   { path: 'register', component: UserRegister },
 
-  // Rota padrão (sem a barra inicial no redirectTo para evitar erros em algumas versões)
+  // Rotas PRIVADAS (Tudo que estiver em 'children' aparecerá COM o menu lateral e superior)
+  {
+    path: '',
+    component: MainLayout,
+    children: [
+      { path: 'dashboard', component: Dashboard },
+      // Futuramente: { path: 'entradas', component: Entradas }
+    ]
+  },
+
+  // Redirecionamento padrão
   { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];
