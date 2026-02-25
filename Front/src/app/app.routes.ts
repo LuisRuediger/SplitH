@@ -5,6 +5,9 @@ import { Dashboard } from './components/dashboard/dashboard';
 import { MainLayout } from './components/main-layout/main-layout'; // Importe o layout
 
 export const routes: Routes = [
+  // Redirecionamento padrão
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+
   // Rotas PÚBLICAS (Página limpa, ocupam a tela toda)
   { path: 'login', component: LoginForm },
   { path: 'register', component: UserRegister },
@@ -19,6 +22,4 @@ export const routes: Routes = [
     ]
   },
 
-  // Redirecionamento padrão
-  { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];
