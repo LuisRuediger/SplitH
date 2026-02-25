@@ -31,3 +31,10 @@
         transform: translateY(0);
     }
 }
+
+.p-toolbar.no-style-toolbar.p-component {
+  background: white !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
