@@ -37,12 +37,12 @@
             [invalid]="isInvalid('fullName')"
             class="w-full custom-input"
           />
+        </div>
             @if (isInvalid('fullName')) {
               @if (registerForm.get('fullName')?.errors?.['required']) {
               <p-message severity="error" size="small" variant="simple">Nome é obrigatório.</p-message>
               }
             }
-        </div>
       </div>
 
       <div class="mb-5">
@@ -65,6 +65,7 @@
             [invalid]="isInvalid('email')"
             class="w-full custom-input"
           />
+        </div>
             @if (isInvalid('email')) {
               @if (registerForm.get('email')?.errors?.['required']) {
                 <p-message severity="error" size="small" variant="simple">Email é obrigatório.</p-message>
@@ -73,7 +74,6 @@
                 <p-message severity="error" size="small" variant="simple">Por favor insira um Email válido.</p-message>
               }
             }
-        </div>
       </div>
 
       <div class="mb-5">
@@ -96,13 +96,12 @@
             [invalid]="isInvalid('phone')"
             class="w-full custom-input" maxlength="11"
           />
-
+        </div>
           @if (isInvalid('phone')) {
             @if (registerForm.get('phone')?.errors?.['required']) {
               <p-message severity="error" size="small" variant="simple">Telefone é obrigatório</p-message>
             }
           }
-        </div>
       </div>
 
       <div class="mb-5">
@@ -124,6 +123,7 @@
             [invalid]="isInvalid('password')"
             class="custom-input w-full placeholder:text-secondary"
           />
+        </div>
             @if (isInvalid('password')) {
               @if (registerForm.get('password')?.errors?.['required']) {
                 <p-message severity="error" size="small" variant="simple">Senha é obrigatória.</p-message>
@@ -132,7 +132,6 @@
                 <p-message severity="error" size="small" variant="simple">Senha deve ter no mínimo 8 caracteres.</p-message>
               }
             }
-        </div>
       </div>
 
       <div class="mb-5">
@@ -153,6 +152,7 @@
             [invalid]="isInvalid('confirmPassword')"
             class="custom-input w-full placeholder:text-secondary"
           />
+        </div>
             @if (isInvalid('confirmPassword') || registerForm.hasError('passwordMismatch')) {
               @if (registerForm.get('confirmPassword')?.errors?.['required']) {
                 <p-message severity="error" size="small" variant="simple">Confirme sua senha.</p-message>
@@ -161,7 +161,6 @@
                 <p-message severity="error" size="small" variant="simple">As senhas não são iguais.</p-message>
               }
             }
-        </div>
       </div>
 
       <div class="mb-6 flex justify-start items-start">
