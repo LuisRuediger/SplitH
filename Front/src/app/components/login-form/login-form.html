@@ -65,12 +65,12 @@
                   id="senha"
                   placeholder="••••••••"
                   formControlName="password"
-                  [invalid]="isInvalid('senha')"
+                  [invalid]="isInvalid('password')"
                   class="custom-input w-full placeholder:text-secondary"
                 />
               </div>
-                @if (isInvalid('senha')) {
-                    <p-message severity="error" size="small" variant="simple">senha é obrigatória.</p-message>
+                @if (isInvalid('password')) {
+                    <p-message severity="error" size="small" variant="simple">Senha é obrigatória.</p-message>
                 }
           </div>
 
