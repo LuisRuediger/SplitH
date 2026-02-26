@@ -153,11 +153,11 @@
             class="custom-input w-full placeholder:text-secondary"
           />
         </div>
-            @if (isInvalid('confirmPassword') || registerForm.hasError('passwordMismatch')) {
+            @if (isInvalid('confirmPassword')) {
               @if (registerForm.get('confirmPassword')?.errors?.['required']) {
                 <p-message severity="error" size="small" variant="simple">Confirme sua senha.</p-message>
               }
-              @if (registerForm.hasError('passwordMismatch')) {
+              @if (registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.value && registerForm.hasError('passwordMismatch')) {
                 <p-message severity="error" size="small" variant="simple">As senhas não são iguais.</p-message>
               }
             }
