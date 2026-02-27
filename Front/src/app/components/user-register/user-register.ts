@@ -22,6 +22,7 @@ export class UserRegister {
   registerForm: FormGroup;
   formSubmitted: boolean = false;
   isLoading = false;
+  showPassword = false;
 
   constructor(private fb: FormBuilder) {
     this.registerForm = this.fb.group({
@@ -60,5 +61,9 @@ export class UserRegister {
   isInvalid(controlName: string) {
     const control = this.registerForm.get(controlName);
     return control?.invalid && (control.touched || this.formSubmitted);
+  }
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
   }
 }
