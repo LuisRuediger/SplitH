@@ -24,6 +24,7 @@ export class LoginForm {
     isLoading = false;
     exampleForm: FormGroup;
     formSubmitted = false;
+    showPassword = false;
 
     constructor(private fb: FormBuilder) {
         this.exampleForm = this.fb.group({
@@ -56,5 +57,9 @@ export class LoginForm {
     isInvalid(controlName: string) {
         const control = this.exampleForm.get(controlName);
         return control?.invalid && (control.touched || this.formSubmitted);
+    }
+
+    togglePassword() {
+      this.showPassword = !this.showPassword;
     }
 }
