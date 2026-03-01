@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import "primeicons/primeicons.css";
+@import "tailwindcss";
 
 @theme {
     /* Verde da marca */
@@ -33,7 +33,7 @@
 }
 
 .p-toolbar.no-style-toolbar.p-component {
-  background: white !important;
+  background: var(--color-brand-dark) !important;
   border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
