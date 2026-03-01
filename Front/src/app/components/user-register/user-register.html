@@ -37,12 +37,12 @@
             [invalid]="isInvalid('fullName')"
             class="w-full custom-input"
           />
+        </div>
             @if (isInvalid('fullName')) {
               @if (registerForm.get('fullName')?.errors?.['required']) {
               <p-message severity="error" size="small" variant="simple">Nome é obrigatório.</p-message>
               }
             }
-        </div>
       </div>
 
       <div class="mb-5">
@@ -65,6 +65,7 @@
             [invalid]="isInvalid('email')"
             class="w-full custom-input"
           />
+        </div>
             @if (isInvalid('email')) {
               @if (registerForm.get('email')?.errors?.['required']) {
                 <p-message severity="error" size="small" variant="simple">Email é obrigatório.</p-message>
@@ -73,7 +74,6 @@
                 <p-message severity="error" size="small" variant="simple">Por favor insira um Email válido.</p-message>
               }
             }
-        </div>
       </div>
 
       <div class="mb-5">
@@ -96,13 +96,12 @@
             [invalid]="isInvalid('phone')"
             class="w-full custom-input" maxlength="11"
           />
-
+        </div>
           @if (isInvalid('phone')) {
             @if (registerForm.get('phone')?.errors?.['required']) {
               <p-message severity="error" size="small" variant="simple">Telefone é obrigatório</p-message>
             }
           }
-        </div>
       </div>
 
       <div class="mb-5">
@@ -119,11 +118,20 @@
           <input
             pInputText
             id="password"
+            [type]="showPassword ? 'text' : 'password'"
             placeholder="Mínimo 8 caracteres"
             formControlName="password"
             [invalid]="isInvalid('password')"
             class="custom-input w-full placeholder:text-secondary"
           />
+          <button
+            type="button"
+            (click)="togglePassword()"
+            class="absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary hover:text-text transition-colors cursor-pointer"
+          >
+            <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+          </button>
+        </div>
             @if (isInvalid('password')) {
               @if (registerForm.get('password')?.errors?.['required']) {
                 <p-message severity="error" size="small" variant="simple">Senha é obrigatória.</p-message>
@@ -132,7 +140,6 @@
                 <p-message severity="error" size="small" variant="simple">Senha deve ter no mínimo 8 caracteres.</p-message>
               }
             }
-        </div>
       </div>
 
       <div class="mb-5">
@@ -147,21 +154,29 @@
             <i class="pi pi-lock"></i>
           </span>
           <input
+            [type]="showPassword ? 'text' : 'password'"
             pInputText id="confirmPassword"
             placeholder="Digite a senha novamente"
             formControlName="confirmPassword"
             [invalid]="isInvalid('confirmPassword')"
             class="custom-input w-full placeholder:text-secondary"
           />
-            @if (isInvalid('confirmPassword') || registerForm.hasError('passwordMismatch')) {
+          <button
+            type="button"
+            (click)="togglePassword()"
+            class="absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary hover:text-text transition-colors cursor-pointer"
+          >
+            <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+          </button>
+        </div>
+            @if (isInvalid('confirmPassword')) {
               @if (registerForm.get('confirmPassword')?.errors?.['required']) {
                 <p-message severity="error" size="small" variant="simple">Confirme sua senha.</p-message>
               }
-              @if (registerForm.hasError('passwordMismatch')) {
-                <p-message severity="error" size="small" variant="simple">As senhas não são iguais.</p-message>
-              }
             }
-        </div>
+            @if (registerForm.get('confirmPassword')?.touched && registerForm.get('confirmPassword')?.value && registerForm.hasError('passwordMismatch')) {
+              <p-message severity="error" size="small" variant="simple">As senhas não são iguais.</p-message>
+            }
       </div>
 
       <div class="mb-6 flex justify-start items-start">

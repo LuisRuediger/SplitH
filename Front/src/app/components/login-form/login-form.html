@@ -37,6 +37,7 @@
                 [invalid]="isInvalid('email')"
                 class="w-full custom-input"
               />
+            </div>
               @if (isInvalid('email')) {
                   @if (exampleForm.get('email')?.errors?.['required']) {
                       <p-message severity="error" size="small" variant="simple">Email é obrigatório.</p-message>
@@ -45,7 +46,6 @@
                       <p-message severity="error" size="small" variant="simple">Por favor insira um Email válido.</p-message>
                   }
               }
-            </div>
           </div>
 
           <div class="mb-3">
@@ -60,18 +60,27 @@
                   <i class="pi pi-lock"></i>
                 </span>
                 <input
-                  pInputText
+                pInputText
+                [type]="showPassword ? 'text' : 'password'"
                   type="password"
                   id="senha"
                   placeholder="••••••••"
                   formControlName="password"
-                  [invalid]="isInvalid('senha')"
+                  [invalid]="isInvalid('password')"
                   class="custom-input w-full placeholder:text-secondary"
                 />
-                @if (isInvalid('senha')) {
-                    <p-message severity="error" size="small" variant="simple">senha é obrigatória.</p-message>
-                }
+                <button
+                  type="button"
+                  (click)="togglePassword()"
+                  class="absolute right-3.5 top-1/2 -translate-y-1/2 text-secondary hover:text-text transition-colors cursor-pointer"
+                >
+                  <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                </button>
               </div>
+
+                @if (isInvalid('password')) {
+                    <p-message severity="error" size="small" variant="simple">Senha é obrigatória.</p-message>
+                }
           </div>
 
           <div class="mb-6 flex justify-between items-center flex-row">
