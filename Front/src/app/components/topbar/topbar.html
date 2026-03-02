@@ -1,23 +1,37 @@
-<p-toolbar class="no-style-toolbar w-full bg-brand-dark border-brand shadow-sm h-16 flex items-center justify-between px-6 z-50">
+<div class="card">
+    <p-toolbar [style]="{ 
+                'background-color': 'var(--color-brand-dark)', 
+                'border': 'none', 
+                'border-bottom': '3px solid var(--color-brand)', 
+                'border-radius': '0', 
+                'box-shadow': 'none'
+                }">
 
-    <div class="p-toolbar-group-start">
-        <div class="flex items-center gap-2">
-            <i class="pi pi-wallet text-text text-2xl"></i>
-            <span class="text-2xl font-bold text-gray-800 tracking-tight">Split<span class="text-text">H</span></span>
-        </div>
-    </div>
+        <ng-template #start>
+            <div class="flex items-center gap-2">
 
-    <div class="p-toolbar-group-end flex items-center gap-4">
-        <button class="text-text hover:to-brand transition-colors">
-            <i class="pi pi-bell text-xl"></i>
-        </button>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--color-text)" class="size-6">
+                    <path d="M2.273 5.625A4.483 4.483 0 0 1 5.25 4.5h13.5c1.141 0 2.183.425 2.977 1.125A3 3 0 0 0 
+                        18.75 3H5.25a3 3 0 0 0-2.977 2.625ZM2.273 8.625A4.483 4.483 0 0 1 5.25 7.5h13.5c1.141 
+                        0 2.183.425 2.977 1.125A3 3 0 0 0 18.75 6H5.25a3 3 0 0 0-2.977 2.625ZM5.25 9a3 3 0 0 
+                        0-3 3v6a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3H15a.75.75 0 0 0-.75.75 2.25 
+                        2.25 0 0 1-4.5 0A.75.75 0 0 0 9 9H5.25Z" />
+                </svg>
 
-        <div class="h-6 w-px bg-gray-300"></div>
+                <button
+                    class=" p-1 hover:bg-brand hover:rounded-2xl focus:outline-3 focus:outline-offset-3 focus:outline-brand active:bg-brand-dark rounded-3xl font-bold text-title">
+                    Save changes
+                </button>
 
-        <div class="flex items-center gap-3 cursor-pointer hover:bg-brand p-2 rounded-lg transition-colors">
-            <span class="text-sm font-medium text-gray-700">Olá, {{ nomeUsuario }}</span>
-            <p-avatar icon="pi pi-user" styleClass="bg-blue-100 text-blue-600" shape="circle"></p-avatar>
-        </div>
-    </div>
+            </div>
 
-</p-toolbar>
+        </ng-template>
+        <ng-template #end>
+            <div class="flex items-center gap-2">
+                <p-button label="Share" severity="contrast" size="small" />
+                <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png"
+                    [style]="{ width: '32px', height: '32px' }" />
+            </div>
+        </ng-template>
+    </p-toolbar>
+</div>
