@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { ToastModule } from 'primeng/toast';
 import { Checkbox } from 'primeng/checkbox';
+import { AuthService } from '../../core/services/auth-service';
 
 
 @Component({
@@ -20,6 +21,7 @@ import { Checkbox } from 'primeng/checkbox';
 export class LoginForm {
     messageService = inject(MessageService);
     private router = inject(Router);
+    private auth = inject(AuthService);
 
     isLoading = false;
     exampleForm: FormGroup;
@@ -39,17 +41,15 @@ export class LoginForm {
         if (this.exampleForm.valid) {
             this.isLoading = true;
 
-            // Simulação de login
             setTimeout(() => {
-              console.log("Login realizado com sucesso!");
+              const { email, password } = this.exampleForm.value;
 
-              this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Login realizado!' });
+              this.auth.login(email, password).subscribe({
+                next: () => this.router.navigate(['/dashboard']),
+                error: (err) => console.log("Error:", err)
+              });
 
               this.isLoading = false;
-
-              // 3. Navega para o Dashboard após o sucesso
-              this.router.navigate(['/dashboard']);
-
             }, 2000);
         }
     }
