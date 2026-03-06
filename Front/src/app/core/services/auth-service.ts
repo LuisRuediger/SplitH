@@ -15,4 +15,6 @@ export class AuthService {
     return this.http.post<{ token: string }>(`${this.api}/login`, { email, password }).pipe(tap(res => localStorage.setItem('token', res.token)))
   }
 
+  get token () { return localStorage.getItem('token'); }
+  get isLoggedIn() { return !!this.token; }
 }
