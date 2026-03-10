@@ -27,6 +27,7 @@ export class LoginForm {
     exampleForm: FormGroup;
     formSubmitted = false;
     showPassword = false;
+    authError: string | null = null;
 
     constructor(private fb: FormBuilder) {
         this.exampleForm = this.fb.group({
@@ -46,7 +47,13 @@ export class LoginForm {
 
               this.auth.login(email, password).subscribe({
                 next: () => this.router.navigate(['/dashboard']),
-                error: (err) => console.log("Error:", err)
+                error: (err) => {
+                  if (err.status === 401 || err.status === 403) {
+                    this.authError = "Usuário ou senha incorretos";
+                  } else {
+                    this.authError = "Erro inesperado. Tente novamente."
+                  }
+                }
               });
 
               this.isLoading = false;

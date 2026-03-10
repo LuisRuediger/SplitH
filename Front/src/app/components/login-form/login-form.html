@@ -80,6 +80,12 @@
 
                 @if (isInvalid('password')) {
                     <p-message severity="error" size="small" variant="simple">Senha é obrigatória.</p-message>
+                  }
+                  @if (authError) {
+                  <p-message severity="error" size="small" variant="simple">
+                    {{ authError }}
+                  </p-message>
+
                 }
           </div>
 
