@@ -19,7 +19,7 @@
 
       <div class="mb-5">
         <label
-          for="fullName"
+          for="name"
           class="block text-sm text-left font-medium text-text"
         >
           Nome Completo
@@ -31,15 +31,15 @@
           <input
             pInputText
             type="text"
-            id="fullName"
+            id="name"
             placeholder="Digite seu nome completo"
-            formControlName="fullName"
-            [invalid]="isInvalid('fullName')"
+            formControlName="name"
+            [invalid]="isInvalid('name')"
             class="w-full custom-input"
           />
         </div>
-            @if (isInvalid('fullName')) {
-              @if (registerForm.get('fullName')?.errors?.['required']) {
+            @if (isInvalid('name')) {
+              @if (registerForm.get('name')?.errors?.['required']) {
               <p-message severity="error" size="small" variant="simple">Nome é obrigatório.</p-message>
               }
             }

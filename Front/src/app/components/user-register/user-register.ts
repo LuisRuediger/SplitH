@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../core/services/auth-service';
 
 @Component({
   selector: 'app-user-register',
@@ -23,10 +24,11 @@ export class UserRegister {
   formSubmitted: boolean = false;
   isLoading = false;
   showPassword = false;
+  private auth = inject(AuthService)
 
   constructor(private fb: FormBuilder) {
     this.registerForm = this.fb.group({
-      fullName: ['', Validators.required],
+      name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(8)]],
@@ -48,12 +50,16 @@ export class UserRegister {
       this.isLoading = true;
 
       setTimeout(() => {
-        this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Form Submitted', life: 3000 });
-        this.registerForm.reset();
-        this.formSubmitted = false;
-        this.isLoading = false;
+        const { name, email, password } = this.registerForm.value;
 
-        this.router.navigate(['/dashboard']);
+        this.auth.register({name, email, password}).subscribe({
+          next: () => this.router.navigate(['/dashboard']),
+          error: (err) => {
+            console.log("Error:", err.error)
+          }
+        })
+
+        this.isLoading = false;
       }, 2000)
     }
   }
