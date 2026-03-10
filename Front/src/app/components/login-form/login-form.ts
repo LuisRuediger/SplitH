@@ -36,6 +36,12 @@ export class LoginForm {
         });
     }
 
+    ngOnInit() {
+      this.exampleForm.valueChanges.subscribe(() => {
+        this.authError = null;
+      })
+    }
+
     onSubmit() {
         this.formSubmitted = true;
 
