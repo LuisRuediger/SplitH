@@ -63,6 +63,15 @@ export class UserRegister {
             setTimeout(() => this.router.navigate(['/login']), 1500);
           },
           error: (err) => {
+            if (err.status === 409) {
+              this.messageService.add({
+                severity: 'error',
+                summary: `O email ${email} já está cadastrado!`,
+                detail: 'Tente usar um email diferente.',
+                life: 3000
+              })
+            }
+
             console.log("Error:", err.error)
           }
         })
