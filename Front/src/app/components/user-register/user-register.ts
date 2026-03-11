@@ -53,7 +53,15 @@ export class UserRegister {
         const { name, email, password } = this.registerForm.value;
 
         this.auth.register({name, email, password}).subscribe({
-          next: () => this.router.navigate(['/dashboard']),
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Conta criada!',
+              detail: 'Sua conta foi criada com sucesso',
+              life: 3000
+            })
+            setTimeout(() => this.router.navigate(['/login']), 1500);
+          },
           error: (err) => {
             console.log("Error:", err.error)
           }
