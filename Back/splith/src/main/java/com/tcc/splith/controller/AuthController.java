@@ -51,6 +51,10 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity <RegisterUserResponse> register(@Valid @RequestBody RegisterUserRequest request) {
+        if(userRepository.existsByEmail(request.email())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
         User newUser = new User();
         newUser.setPassword(passwordEncoder.encode(request.password()));
         newUser.setEmail(request.email());
