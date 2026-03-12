@@ -1,0 +1,66 @@
+/* 1. Tira o fundo da estrutura principal da tabela */
+::ng-deep .p-datatable,
+::ng-deep .p-datatable .p-datatable-wrapper,
+::ng-deep .p-datatable table {
+    background: #ffffff0f !important;
+}
+
+/* 2. Cabeçalho fixo (Scrollable) com a cor de fundo correta */
+::ng-deep .p-datatable .p-datatable-thead > tr > th,
+::ng-deep .p-datatable-scrollable .p-datatable-thead > tr > th {
+    background-color: var(--color-surface) !important; /* Cor sólida para esconder as linhas passando por baixo */
+    border-bottom: 1px solid rgba(161, 161, 170, 0.1) !important;
+    color: var(--color-secondary) !important;
+    z-index: 1; /* Garante que o cabeçalho fique por cima de tudo na rolagem */
+}
+
+/* 2.1 Remove o fundo branco das novas caixas de rolagem do PrimeNG */
+::ng-deep .p-datatable-scrollable-header,
+::ng-deep .p-datatable-scrollable-wrapper {
+    background: transparent !important;
+}
+
+/* 3. Linhas e células totalmente transparentes */
+::ng-deep .p-datatable .p-datatable-tbody > tr,
+::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+    background-color: transparent !important;
+    border-bottom: 1px solid #a1a1aa0d !important;
+}
+
+/* 4. Efeito hover (passar o mouse) suave nas linhas */
+::ng-deep .p-datatable .p-datatable-tbody > tr:hover,
+::ng-deep .p-datatable .p-datatable-tbody > tr:hover > td {
+    background-color: #ffffff08 !important;
+}
+
+/* 5. Paginador  */
+::ng-deep .p-paginator {
+    background-color: transparent !important;
+    border: none !important;
+    margin-top: 1rem;
+}
+
+::ng-deep .p-paginator .p-paginator-pages .p-paginator-page,
+::ng-deep .p-paginator .p-paginator-first,
+::ng-deep .p-paginator .p-paginator-prev,
+::ng-deep .p-paginator .p-paginator-next,
+::ng-deep .p-paginator .p-paginator-last {
+    color: var(--color-text) !important;
+    background-color: transparent !important;
+    border-radius: 8px !important;
+}
+
+/* Destaca a página atual com o nosso Verde da Marca (Forçando para o PrimeNG 18/Aura) */
+::ng-deep .p-paginator .p-paginator-pages .p-paginator-page.p-highlight,
+::ng-deep .p-paginator .p-paginator-pages .p-paginator-page[data-p-highlight="true"],
+::ng-deep .p-paginator .p-paginator-pages .p-paginator-page[aria-current="page"] {
+    background-color: var(--color-brand) !important;
+    color: #ffffff !important;
+    border-color: var(--color-brand) !important;
+}
+
+/* Efeito ao passar o mouse sobre o botão ativo para não perder a cor */
+::ng-deep .p-paginator .p-paginator-pages .p-paginator-page.p-highlight:hover,
+::ng-deep .p-paginator .p-paginator-pages .p-paginator-page[data-p-highlight="true"]:hover {
+    background-color: var(--color-brand-dark) !important;
+}
