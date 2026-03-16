@@ -1,0 +1,45 @@
+<p-toast />
+<div class="px-8 py-6 space-y-6 bg-background/90">
+
+  <div class="grid grid-cols-2 xl:grid-cols-4 gap-4">
+
+    <div class="bg-surface border border-zinc-700/30 rounded-2xl p-5 hover:border-zinc-600/50 transition-all animate-slideUp">
+      <div class="w-10 h-10 rounded-xl bg-brand/10 flex items-center justify-center mb-4">
+        <i class="pi pi-dollar text-brand"></i>
+      </div>
+      <p class="text-secondary text-xs font-medium mb-1">Total do Grupo</p>
+      <p class="text-title text-2xl font-bold">{{ formatCurrency(resume.groupTotal) }}</p>
+      <p class="text-brand text-xs mt-1 flex items-center gap-1 font-medium">
+        <i class="pi pi-arrow-up text-xs"></i>
+        {{ resume.variationPercentage }}% vs mês anterior
+      </p>
+    </div>
+
+    <div class="bg-surface border border-zinc-700/30 rounded-2xl p-5 hover:border-zinc-600/50 transition-all animate-slideUp">
+      <div class="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center mb-4">
+        <i class="pi pi-user text-sky-400"></i>
+      </div>
+      <p class="text-secondary text-xs font-medium mb-1">Sua Parte</p>
+      <p class="text-title text-2xl font-bold">{{ formatCurrency(resume.userShare) }}</p>
+      <p class="text-secondary text-xs mt-1">25% do total</p>
+    </div>
+
+    <div class="bg-surface border border-zinc-700/30 rounded-2xl p-5 hover:border-zinc-600/50 transition-all animate-slideUp">
+      <div class="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center mb-4">
+        <i class="pi pi-users text-amber-400"></i>
+      </div>
+      <p class="text-secondary text-xs font-medium mb-1">Membros Ativos</p>
+      <p class="text-title text-2xl font-bold">{{ resume.activeMembersCount }}</p>
+      <p class="text-secondary text-xs mt-1">Divisão igualitária</p>
+    </div>
+
+    <div class="bg-surface border border-zinc-700/30 rounded-2xl p-5 hover:border-zinc-600/50 transition-all animate-slideUp">
+      <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4">
+        <i class="pi pi-calendar text-purple-400"></i>
+      </div>
+      <p class="text-secondary text-xs font-medium mb-1">Este Mês</p>
+      <p class="text-title text-2xl font-bold">{{ resume.monthlyTransactions }}</p>
+      <p class="text-secondary text-xs mt-1">transações registradas</p>
+    </div>
+
+  </div>
