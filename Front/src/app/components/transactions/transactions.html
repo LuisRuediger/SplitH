@@ -8,8 +8,10 @@
                 <p class="text-secondary text-sm mt-1">Gerencie as entradas e saídas</p>
             </div>
 
-            <button
-                class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-white bg-brand transition-colors hover:bg-brand-dark cursor-pointer shadow-md">
+            <button class="px-4 py-2 flex items-center 
+                gap-2 rounded-lg font-medium 
+                text-sm text-white bg-brand transition-colors
+                 hover:bg-brand-dark cursor-pointer shadow-md" (click)="showModal()">
                 <i class="pi pi-plus"></i>
                 Nova Transação
             </button>
@@ -27,26 +29,31 @@
         </div>
 
         <div class="flex-1 min-h-0 flex flex-col">
-            <p-table [value]="transactionsList" [rows]="10" [paginator]="true" 
-                     [scrollable]="true" scrollHeight="flex" 
-                     class="h-full flex flex-col">
-                
+            <p-table [value]="transactionsList" [rows]="10" [paginator]="true" [scrollable]="true" scrollHeight="flex"
+                class="h-full flex flex-col">
+
                 <ng-template pTemplate="header">
-                    <tr> 
-                        <th class="font-medium text-sm">Date</th>
-                        <th class="font-medium text-sm">Description</th>
-                        <th class="font-medium text-sm">Group</th>
-                        <th class="font-medium text-sm text-right">Amount</th>
+                    <tr>
+                        <th class="font-medium text-sm">Data</th>
+                        <th class="font-medium text-sm">Descrição</th>
+                        <th class="font-medium text-sm">Categoria</th>
+                        <th class="font-medium text-sm">Conta</th>
+                        <th class="font-medium text-sm">Grupo</th>
+                        <th class="font-medium text-sm text-right">Valor</th>
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="body" let-transaction>
                     <tr class="hover:bg-background/50 transition-colors">
                         <td class="text-text border-b border-zinc-400/10">{{ transaction.date }}</td>
-                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.description }}</td>
+                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.description }}
+                        </td>
+                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.category }}</td>
+                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.account }}</td>
 
                         <td class="border-b border-zinc-400/10">
-                            <span class="text-xs px-2 py-1 bg-background text-secondary rounded-md border border-zinc-400/10">
+                            <span
+                                class="text-xs px-2 py-1 bg-background text-secondary rounded-md border border-zinc-400/10">
                                 {{ transaction.group }}
                             </span>
                         </td>
@@ -71,3 +78,83 @@
 
     </div>
 </div>
+
+<p-dialog [(visible)]="displayModal" [modal]="true" [draggable]="false" [resizable]="false" header="Adicionar Transação"
+    styleClass="w-full max-w-[480px] bg-surface border border-zinc-700/50 shadow-2xl rounded-2xl">
+
+    <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="mt-4 flex flex-col gap-5">
+
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Tipo de Transação</label>
+            <div class="grid grid-cols-2 gap-3">
+                <button type="button" (click)="setTransactionType('INCOME')"
+                    class="flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all font-medium text-sm cursor-pointer"
+                    [ngClass]="transactionForm.get('type')?.value === 'INCOME' 
+                        ? 'border-income bg-income/10 text-income' 
+                        : 'border-zinc-700/50 text-secondary hover:border-zinc-600'">
+                    <i class="pi pi-arrow-up text-xs"></i> Receita
+                </button>
+                <button type="button" (click)="setTransactionType('EXPENSE')"
+                    class="flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all font-medium text-sm cursor-pointer"
+                    [ngClass]="transactionForm.get('type')?.value === 'EXPENSE' 
+                        ? 'border-expense bg-expense/10 text-expense' 
+                        : 'border-zinc-700/50 text-secondary hover:border-zinc-600'">
+                    <i class="pi pi-arrow-down text-xs"></i> Despesa
+                </button>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Valor</label>
+            <p-inputNumber formControlName="amount" mode="currency" currency="BRL" locale="pt-BR" placeholder="R$ 0,00"
+                styleClass="w-full" [ngClass]="{'ng-invalid ng-dirty': isInvalid('amount')}" />
+        </div>
+
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Descrição</label>
+            <input pInputText formControlName="description" placeholder="Ex: Compra no supermercado"
+                class="w-full bg-input border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand"
+                [ngClass]="{'border-expense': isInvalid('description')}" />
+        </div>
+
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Categoria</label>
+            <p-select formControlName="category" [options]="categories" optionLabel="label" optionValue="value"
+                placeholder="Selecione uma categoria" [editable]="true"
+                styleClass="w-full bg-input border-zinc-700/50" />
+        </div>
+
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Conta</label>
+            <p-select formControlName="account" [options]="accounts" optionLabel="label" optionValue="value"
+                placeholder="Selecione uma conta" styleClass="w-full bg-input border-zinc-700/50" />
+        </div>
+
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Data</label>
+            <p-datepicker formControlName="date" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full" />
+        </div>
+
+        <div class="flex items-center justify-between py-2 border-t border-zinc-700/30 mt-2">
+            <label class="text-sm text-text font-medium cursor-pointer">Conta Compartilhada</label>
+            <p-toggleswitch formControlName="isShared" />
+        </div>
+
+        <div *ngIf="transactionForm.get('isShared')?.value" class="animate-slideUp -mt-2">
+            <label class="block text-xs text-secondary font-medium mb-2">Selecione os Grupos</label>
+            <p-multiselect formControlName="sharedGroups" [options]="groups" optionLabel="label" optionValue="value"
+                placeholder="Escolha um ou mais grupos" styleClass="w-full bg-input border-zinc-700/50" />
+        </div>
+
+        <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-700/30">
+            <button type="button" (click)="hideModal()"
+                class="px-5 py-2.5 rounded-lg text-sm font-medium text-text bg-transparent hover:bg-zinc-700/30 transition-colors cursor-pointer">
+                Cancelar
+            </button>
+            <button type="submit"
+                class="px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-brand hover:bg-brand-dark transition-colors cursor-pointer shadow-md">
+                Adicionar Transação
+            </button>
+        </div>
+    </form>
+</p-dialog>

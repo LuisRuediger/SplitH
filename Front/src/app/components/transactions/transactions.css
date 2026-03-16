@@ -9,7 +9,7 @@
 ::ng-deep .p-datatable .p-datatable-thead > tr > th,
 ::ng-deep .p-datatable-scrollable .p-datatable-thead > tr > th {
     background-color: var(--color-surface) !important; /* Cor sólida para esconder as linhas passando por baixo */
-    border-bottom: 1px solid rgba(161, 161, 170, 0.1) !important;
+    border-bottom: 1px solid #a1a1aa1a !important;
     color: var(--color-secondary) !important;
     z-index: 1; /* Garante que o cabeçalho fique por cima de tudo na rolagem */
 }
@@ -63,4 +63,42 @@
 ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page.p-highlight:hover,
 ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page[data-p-highlight="true"]:hover {
     background-color: var(--color-brand-dark) !important;
+}
+
+/* Ajustes para o Modal e Formulários PrimeNG no Dark Mode */
+::ng-deep .p-dialog-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid #a1a1aa1a !important;
+    color: var(--color-title) !important;
+    padding: 1.5rem !important;
+}
+
+::ng-deep .p-dialog-content {
+    background-color: transparent !important;
+    padding: 1.5rem !important;
+}
+
+::ng-deep .p-dialog-header-icons .p-dialog-header-icon {
+    color: var(--color-secondary) !important;
+    
+
+}
+
+::ng-deep .p-dialog-header-icons .p-dialog-header-icon:hover {
+    background-color: #ffffff0d !important;
+    color: var(--color-title) !important;
+}
+
+::ng-deep .p-inputnumber-input,
+::ng-deep .p-datepicker-input {
+    background-color: var(--color-input) !important;
+    border: 1px solid #a1a1aa33 !important;
+    color: var(--color-text) !important;
+    border-radius: 0.5rem !important;
+    width: 100% !important;
+}
+
+::ng-deep .p-inputnumber-input:focus,
+::ng-deep .p-datepicker-input:focus {
+    border-color: var(--color-brand) !important;
 }
