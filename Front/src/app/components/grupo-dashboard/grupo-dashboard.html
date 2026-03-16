@@ -91,4 +91,84 @@
         </div>
     </div>
   </div>
+
+  <div class="bg-surface border border-zinc-700/30 rounded-2xl overflow-hidden">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-700/30">
+      <h2 class="text-title text-sm font-semibold">Todas as Transações</h2>
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-xs"></i>
+          <input
+            type="text"
+            placeholder="Buscar transação..."
+            class="bg-input border border-zinc-700/50 rounded-xl pl-8 pr-4 py-2 text-xs text-text placeholder:text-secondary focus:outline-none focus:border-brand transition-colors w-52"
+          />
+        </div>
+        <button class="flex items-center gap-2 px-3 py-2 rounded-xl bg-input border border-zinc-700/50 text-secondary text-xs hover:text-text hover:border-zinc-600 transition-all">
+          <i class="pi pi-filter text-xs"></i>
+          Filtrar
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-[130px_1fr_130px_160px_120px_110px_90px] gap-4 px-6 py-3 border-b border-zinc-700/30 bg-input/20">
+      <span class="text-secondary text-xs font-semibold uppercase tracking-wider">Data</span>
+      <span class="text-secondary text-xs font-semibold uppercase tracking-wider">Descrição</span>
+      <span class="text-secondary text-xs font-semibold uppercase tracking-wider">Categoria</span>
+      <span class="text-secondary text-xs font-semibold uppercase tracking-wider">Pago Por</span>
+      <span class="text-secondary text-xs font-semibold uppercase tracking-wider text-right">Valor Total</span>
+      <span class="text-secondary text-xs font-semibold uppercase tracking-wider text-right">Sua Parte</span>
+      <span class="text-secondary text-xs font-semibold uppercase tracking-wider text-right">Status</span>
+    </div>
+
+    @if (transactions.length === 0) {
+      <div class="py-16 text-center">
+        <i class="pi pi-search text-2xl text-secondary mb-3 block"></i>
+        <p class="text-secondary text-sm">Nenhuma transação encontrada.</p>
+      </div>
+    } @else {
+      @for (transaction of transactions; track transaction.id) {
+        <div
+          class="grid grid-cols-[130px_1fr_130px_160px_120px_110px_90px] gap-4 items-center px-6 py-4 hover:bg-zinc-700/15 transition-colors cursor-pointer">
+
+          <span class="text-secondary text-sm">{{ transaction.date }}</span>
+
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-input flex items-center justify-center shrink-0">
+              <i [class]="'pi ' + transaction.icon + ' text-brand'" style="font-size: 0.8rem;"></i>
+            </div>
+            <span class="text-title text-sm font-medium truncate">{{ transaction.description }}</span>
+          </div>
+
+          <div>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full {{ transaction.categoryColor }}">
+              {{ transaction.description }}
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2 min-w-0">
+            <div class="w-6 h-6 rounded-full bg-linear-to-br from-brand-dark to-brand flex items-center justify-center shrink-0">
+              <span class="text-white text-xs font-bold" style="font-size: 0.6rem;">{{ transaction.paidByInitials }}</span>
+            </div>
+            <span class="text-text text-sm truncate">{{ transaction.paidBy }}</span>
+          </div>
+
+          <span class="text-title text-sm font-medium text-right">{{ formatCurrency(transaction.totalAmount) }}</span>
+
+          <span class="text-brand text-sm font-semibold text-right">{{ formatCurrency(transaction.userShare) }}</span>
+
+          <div class="flex justify-end">
+            <span
+              class="text-xs font-semibold px-2.5 py-1 rounded-full"
+              [class]="transaction.status
+                ? 'bg-brand/10 text-brand'
+                : 'bg-amber-500/10 text-amber-400'">
+              {{ transaction.status ? 'Pago' : 'Pendente' }}
+            </span>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
 </div>
