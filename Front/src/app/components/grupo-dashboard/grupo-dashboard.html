@@ -116,7 +116,7 @@
     <p-table
       #dt
       [value]="transactions"
-      [paginator]="true"
+      [paginator]="transactions.length > 0"
       [rows]="5"
       [rowsPerPageOptions]="[5, 10, 25]"
       [globalFilterFields]="['description', 'paidBy', 'category']"
