@@ -12,6 +12,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { TransactionService } from '../../core/services/transaction-service';
 
 @Component({
   selector: 'app-transactions',
@@ -37,6 +38,7 @@ import { ToastModule } from 'primeng/toast';
 export class Transactions {
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
+  private transactionService = inject(TransactionService);
 
   // Controle do Modal
   displayModal = false;
@@ -100,41 +102,67 @@ export class Transactions {
 
  onSubmit() {
     if (this.transactionForm.valid) {
-      // 1. Pega todos os valores preenchidos
       const formValues = this.transactionForm.value;
-
-      // 2. Formata a data (de objeto Date do Angular para string 'dd/mm/yyyy')
       const dateObj = formValues.date as Date;
-      const formattedDate = dateObj.toLocaleDateString('pt-BR');
+      
+      // Formata a data para YYYY-MM-DD (Padrão que o Java entende perfeitamente)
+      const formattedDate = dateObj.toISOString().split('T')[0];
 
-    // 3. Monta o objeto da nova transação
-      const newTransaction = {
-        id: Math.floor(Math.random() * 1000), // Simula um ID pro nosso Mock
-        date: formattedDate,
+      // 1. Objeto "Payload": Formatado exatamente como o Backend (Java) espera
+      const transactionPayload = {
         description: formValues.description,
-        category: formValues.category, // <-- Adicionando a Categoria
-        account: formValues.account,   // <-- Adicionando a Conta
-        // Lembra que estamos focando no pessoal primeiro? Se não for compartilhado, fica "Pessoal"
-        group: formValues.isShared ? formValues.sharedGroups.join(', ') : 'Pessoal', 
-        type: formValues.type,
-        amount: formValues.amount
+        amount: formValues.amount,
+        date: formattedDate,
+        category: formValues.category,
+        account: formValues.account,
+        groupName: formValues.isShared ? formValues.sharedGroups.join(', ') : 'Pessoal',
+        type: formValues.type
       };
 
-      // 4. Adiciona no TOPO da lista (O spread operator [...] ajuda o Angular a atualizar a tabela na hora)
-      this.transactionsList = [newTransaction, ...this.transactionsList];
+      // 2. Chamada real para o Backend
+      this.transactionService.create(transactionPayload).subscribe({
+        next: (response) => {
+          
+          // 3. O Java respondeu com sucesso! Vamos formatar a data de volta para DD/MM/YYYY para a tela
+          // (Adicionamos o T00:00:00 para evitar fuso horário puxando um dia para trás)
+          const dataParaTela = new Date(response.date + 'T00:00:00').toLocaleDateString('pt-BR');
 
-      // 5. Mostra a notificação verde de sucesso na tela
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Transação adicionada com sucesso!',
-        life: 3000 // Some em 3 segundos
+          // 4. Objeto para a Tabela: Formatado com o ID real do banco e os nomes que o HTML espera
+          const transactionForTable = {
+            id: response.id,           // ID verdadeiro gerado pelo PostgreSQL!
+            date: dataParaTela,
+            description: response.description,
+            category: response.category,
+            account: response.account,
+            group: response.groupName, // A tabela usa 'group' em vez de 'groupName'
+            type: response.type,
+            amount: response.amount
+          };
+
+          // 5. Adicionamos na tabela
+          this.transactionsList = [transactionForTable, ...this.transactionsList];
+
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: 'Transação salva no banco de dados!',
+            life: 3000
+          });
+
+          this.hideModal();
+        },
+        error: (err) => {
+          console.error('Erro ao salvar no backend:', err);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Não foi possível salvar a transação.',
+            life: 3000
+          });
+        }
       });
 
-      // 6. Fecha a janelinha
-      this.hideModal();
     } else {
-      // Se tiver erro de validação (ex: esqueceu o valor), ele deixa os campos vermelhos
       this.transactionForm.markAllAsTouched();
     }
   }

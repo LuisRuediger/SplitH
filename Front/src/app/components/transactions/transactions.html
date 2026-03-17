@@ -116,7 +116,7 @@
             <label class="block text-xs text-secondary font-medium mb-2">Descrição</label>
             <input pInputText formControlName="description" placeholder="Ex: Compra no supermercado"
                 class="w-full bg-input border border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand"
-                [ngClass]="{'!border-expense': isInvalid('description')}" />
+                [ngClass]="{'border-expense!': isInvalid('description')}" />
             <small *ngIf="isInvalid('description')" class="text-expense text-xs mt-1 block">A descrição é obrigatória.</small>
         </div>
 
