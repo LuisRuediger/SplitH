@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -35,7 +35,7 @@ import { TransactionService } from '../../core/services/transaction-service';
   templateUrl: './transactions.html',
   styleUrl: './transactions.css'
 })
-export class Transactions {
+export class Transactions implements OnInit {
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private transactionService = inject(TransactionService);
@@ -67,11 +67,7 @@ export class Transactions {
     { label: 'Churrasco', value: 'Churrasco' }
   ];
 
-  transactionsList = [
-    { id: 1, date: '11/03/2026', description: 'Mercado Mensal', category: 'Alimentação', account: 'Conta Corrente', group: 'Apartamento', type: 'EXPENSE', amount: 450.00 },
-    { id: 2, date: '10/03/2026', description: 'Pix do Churrasco', category: 'Lazer', account: 'Conta Corrente', group: 'Churrasco', type: 'INCOME', amount: 60.00 },
-    // ... seus outros mocks ...
-  ];
+  transactionsList: any[] = [ ];
 
   constructor() {
     this.transactionForm = this.fb.group({
@@ -83,6 +79,38 @@ export class Transactions {
       date: [new Date(), Validators.required], // Inicia com a data de hoje
       isShared: [false],
       sharedGroups: [[]]
+    });
+  }
+
+  ngOnInit() {
+    this.loadTransactions();
+  }
+
+  // Função que vai no Java buscar os dados
+  loadTransactions() {
+    this.transactionService.getAll().subscribe({
+      next: (data) => {
+        // O Java manda a data como YYYY-MM-DD. Vamos formatar para DD/MM/YYYY para a tela ficar bonita
+        this.transactionsList = data.map(t => {
+          const dateParts = t.date.split('-');
+          const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : t.date;
+
+          return {
+            id: t.id,
+            date: formattedDate,
+            description: t.description,
+            category: t.category,
+            account: t.account,
+            group: t.groupName, // O Java manda groupName, a tabela espera group
+            type: t.type,
+            amount: t.amount
+          };
+        });
+      },
+      error: (err) => {
+        console.error('Erro ao buscar transações', err);
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar as transações' });
+      }
     });
   }
 
@@ -119,28 +147,10 @@ export class Transactions {
         type: formValues.type
       };
 
-      // 2. Chamada real para o Backend
-      this.transactionService.create(transactionPayload).subscribe({
+     this.transactionService.create(transactionPayload).subscribe({
         next: (response) => {
           
-          // 3. O Java respondeu com sucesso! Vamos formatar a data de volta para DD/MM/YYYY para a tela
-          // (Adicionamos o T00:00:00 para evitar fuso horário puxando um dia para trás)
-          const dataParaTela = new Date(response.date + 'T00:00:00').toLocaleDateString('pt-BR');
-
-          // 4. Objeto para a Tabela: Formatado com o ID real do banco e os nomes que o HTML espera
-          const transactionForTable = {
-            id: response.id,           // ID verdadeiro gerado pelo PostgreSQL!
-            date: dataParaTela,
-            description: response.description,
-            category: response.category,
-            account: response.account,
-            group: response.groupName, // A tabela usa 'group' em vez de 'groupName'
-            type: response.type,
-            amount: response.amount
-          };
-
-          // 5. Adicionamos na tabela
-          this.transactionsList = [transactionForTable, ...this.transactionsList];
+          this.loadTransactions(); // <-- Chama a função para recarregar a tabela do zero!
 
           this.messageService.add({
             severity: 'success',
@@ -152,7 +162,7 @@ export class Transactions {
           this.hideModal();
         },
         error: (err) => {
-          console.error('Erro ao salvar no backend:', err);
+          console.error('Erro ao salvar transação', err);
           this.messageService.add({
             severity: 'error',
             summary: 'Erro',
@@ -161,11 +171,11 @@ export class Transactions {
           });
         }
       });
-
     } else {
       this.transactionForm.markAllAsTouched();
     }
   }
+
 
   // Helper para erros no form
   isInvalid(controlName: string) {
