@@ -100,8 +100,10 @@
           <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-xs"></i>
           <input
             type="text"
+            [(ngModel)]="globalFilter"
             placeholder="Buscar transação..."
             class="bg-input border border-zinc-700/50 rounded-xl pl-8 pr-4 py-2 text-xs text-text placeholder:text-secondary focus:outline-none focus:border-brand transition-colors w-52"
+            (input)="dt.filterGlobal($any($event.target).value, 'contains')"
           />
         </div>
         <button class="flex items-center gap-2 px-3 py-2 rounded-xl bg-input border border-zinc-700/50 text-secondary text-xs hover:text-text hover:border-zinc-600 transition-all">
@@ -111,64 +113,99 @@
       </div>
     </div>
 
-    <div class="grid grid-cols-[130px_1fr_130px_160px_120px_110px_90px] gap-4 px-6 py-3 border-b border-zinc-700/30 bg-input/20">
-      <span class="text-secondary text-xs font-semibold uppercase tracking-wider">Data</span>
-      <span class="text-secondary text-xs font-semibold uppercase tracking-wider">Descrição</span>
-      <span class="text-secondary text-xs font-semibold uppercase tracking-wider">Categoria</span>
-      <span class="text-secondary text-xs font-semibold uppercase tracking-wider">Pago Por</span>
-      <span class="text-secondary text-xs font-semibold uppercase tracking-wider text-right">Valor Total</span>
-      <span class="text-secondary text-xs font-semibold uppercase tracking-wider text-right">Sua Parte</span>
-      <span class="text-secondary text-xs font-semibold uppercase tracking-wider text-right">Status</span>
-    </div>
+    <p-table
+      #dt
+      [value]="transactions"
+      [paginator]="true"
+      [rows]="5"
+      [rowsPerPageOptions]="[5, 10, 25]"
+      [globalFilterFields]="['description', 'paidBy', 'category']"
+      [sortMode]="'multiple'"
+      styleClass="transactions-table"
+      [tableStyle]="{ 'min-width': '60rem' }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="date" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 130px">
+            Data <p-sortIcon field="date" />
+          </th>
+          <th class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30">
+            Descrição
+          </th>
+          <th pSortableColumn="category" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 130px">
+            Categoria <p-sortIcon field="category" />
+          </th>
+          <th pSortableColumn="paidBy" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 160px">
+            Pago Por <p-sortIcon field="paidBy" />
+          </th>
+          <th pSortableColumn="totalAmount" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30 !text-right" style="width: 120px">
+            Valor Total <p-sortIcon field="totalAmount" />
+          </th>
+          <th pSortableColumn="userShare" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30 !text-right" style="width: 110px">
+            Sua Parte <p-sortIcon field="userShare" />
+          </th>
+          <th pSortableColumn="status" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30 !text-right" style="width: 90px">
+            Status <p-sortIcon field="status" />
+          </th>
+        </tr>
+      </ng-template>
 
-    @if (transactions.length === 0) {
-      <div class="py-16 text-center">
-        <i class="pi pi-search text-2xl text-secondary mb-3 block"></i>
-        <p class="text-secondary text-sm">Nenhuma transação encontrada.</p>
-      </div>
-    } @else {
-      @for (transaction of transactions; track transaction.id) {
-        <div
-          class="grid grid-cols-[130px_1fr_130px_160px_120px_110px_90px] gap-4 items-center px-6 py-4 hover:bg-zinc-700/15 transition-colors cursor-pointer">
+      <ng-template pTemplate="body" let-transaction>
+        <tr class="hover:!bg-zinc-700/15 transition-colors cursor-pointer border-b border-zinc-700/20">
 
-          <span class="text-secondary text-sm"> {{ transaction.date }}</span>
+          <td class="!text-secondary !text-sm !border-0">
+            {{ transaction.date }}
+          </td>
 
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-input flex items-center justify-center shrink-0">
-              <i [class]="'pi ' + transaction.icon + ' text-brand'" style="font-size: 0.8rem;"></i>
+          <td class="!border-0">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-input flex items-center justify-center shrink-0">
+                <i [class]="'pi ' + transaction.icon + ' text-brand'" style="font-size: 0.8rem;"></i>
+              </div>
+              <span class="text-title text-sm font-medium truncate">{{ transaction.description }}</span>
             </div>
-            <span class="text-title text-sm font-medium truncate">{{ transaction.description }}</span>
-          </div>
+          </td>
 
-          <div>
+          <td class="!border-0">
             <span class="text-xs font-semibold px-2.5 py-1 rounded-full {{ transaction.categoryColor }}">
-              {{ transaction.description }}
+              {{ transaction.category }}
             </span>
-          </div>
+          </td>
 
-          <div class="flex items-center gap-2 min-w-0">
-            <div class="w-6 h-6 rounded-full bg-linear-to-br from-brand-dark to-brand flex items-center justify-center shrink-0">
-              <span class="text-white text-xs font-bold" style="font-size: 0.6rem;">{{ transaction.paidByInitials }}</span>
+          <td class="!border-0">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-6 h-6 rounded-full bg-linear-to-br from-brand-dark to-brand flex items-center justify-center shrink-0">
+                <span class="text-white font-bold" style="font-size: 0.6rem;">{{ transaction.paidByInitials }}</span>
+              </div>
+              <span class="text-text text-sm truncate">{{ transaction.paidBy }}</span>
             </div>
-            <span class="text-text text-sm truncate">{{ transaction.paidBy }}</span>
-          </div>
+          </td>
 
-          <span class="text-title text-sm font-medium text-right">{{ formatCurrency(transaction.totalAmount) }}</span>
+          <td class="!text-title !text-sm !font-medium !text-right !border-0">
+            {{ formatCurrency(transaction.totalAmount) }}
+          </td>
 
-          <span class="text-brand text-sm font-semibold text-right">{{ formatCurrency(transaction.userShare) }}</span>
+          <td class="!text-brand !text-sm !font-semibold !text-right !border-0">
+            {{ formatCurrency(transaction.userShare) }}
+          </td>
 
-          <div class="flex justify-end">
+          <td class="!text-right !border-0">
             <span
               class="text-xs font-semibold px-2.5 py-1 rounded-full"
-              [class]="transaction.status
-                ? 'bg-brand/10 text-brand'
-                : 'bg-amber-500/10 text-amber-400'">
+              [class]="transaction.status ? 'bg-brand/10 text-brand' : 'bg-amber-500/10 text-amber-400'">
               {{ transaction.status ? 'Pago' : 'Pendente' }}
             </span>
-          </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="empty">
+        <div class="py-16 text-center">
+          <i class="pi pi-search text-2xl text-secondary mb-3 block"></i>
+          <p class="text-secondary text-sm">Nenhuma transação encontrada.</p>
         </div>
-      }
-    }
+      </ng-template>
+    </p-table>
   </div>
 
 </div>
