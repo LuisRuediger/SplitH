@@ -10,6 +10,8 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-transactions',
@@ -25,13 +27,16 @@ import { DialogModule } from 'primeng/dialog';
     DatePickerModule,
     ToggleSwitchModule,
     MultiSelectModule,
-    DialogModule
+    DialogModule,
+    ToastModule
   ],
+  providers: [MessageService],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css'
 })
 export class Transactions {
   private fb = inject(FormBuilder);
+  private messageService = inject(MessageService);
 
   // Controle do Modal
   displayModal = false;
@@ -93,13 +98,43 @@ export class Transactions {
     this.transactionForm.get('type')?.setValue(type);
   }
 
-  onSubmit() {
+ onSubmit() {
     if (this.transactionForm.valid) {
-      console.log('Dados da Transação:', this.transactionForm.value);
-      // Aqui enviaremos para o backend Java no futuro!
-      
+      // 1. Pega todos os valores preenchidos
+      const formValues = this.transactionForm.value;
+
+      // 2. Formata a data (de objeto Date do Angular para string 'dd/mm/yyyy')
+      const dateObj = formValues.date as Date;
+      const formattedDate = dateObj.toLocaleDateString('pt-BR');
+
+    // 3. Monta o objeto da nova transação
+      const newTransaction = {
+        id: Math.floor(Math.random() * 1000), // Simula um ID pro nosso Mock
+        date: formattedDate,
+        description: formValues.description,
+        category: formValues.category, // <-- Adicionando a Categoria
+        account: formValues.account,   // <-- Adicionando a Conta
+        // Lembra que estamos focando no pessoal primeiro? Se não for compartilhado, fica "Pessoal"
+        group: formValues.isShared ? formValues.sharedGroups.join(', ') : 'Pessoal', 
+        type: formValues.type,
+        amount: formValues.amount
+      };
+
+      // 4. Adiciona no TOPO da lista (O spread operator [...] ajuda o Angular a atualizar a tabela na hora)
+      this.transactionsList = [newTransaction, ...this.transactionsList];
+
+      // 5. Mostra a notificação verde de sucesso na tela
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Transação adicionada com sucesso!',
+        life: 3000 // Some em 3 segundos
+      });
+
+      // 6. Fecha a janelinha
       this.hideModal();
     } else {
+      // Se tiver erro de validação (ex: esqueceu o valor), ele deixa os campos vermelhos
       this.transactionForm.markAllAsTouched();
     }
   }

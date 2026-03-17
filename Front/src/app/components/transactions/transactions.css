@@ -1,56 +1,52 @@
-/* 1. Tira o fundo da estrutura principal da tabela */
+/* =========================================
+   1. TABELA (DATATABLE) E PAGINADOR
+   ========================================= */
+
+/* Fundo transparente da tabela e estrutura principal */
 ::ng-deep .p-datatable,
 ::ng-deep .p-datatable .p-datatable-wrapper,
-::ng-deep .p-datatable table {
-    background: #ffffff0f !important;
-}
-
-/* 2. Cabeçalho fixo (Scrollable) com a cor de fundo correta */
-::ng-deep .p-datatable .p-datatable-thead > tr > th,
-::ng-deep .p-datatable-scrollable .p-datatable-thead > tr > th {
-    background-color: var(--color-surface) !important; /* Cor sólida para esconder as linhas passando por baixo */
-    border-bottom: 1px solid #a1a1aa1a !important;
-    color: var(--color-secondary) !important;
-    z-index: 1; /* Garante que o cabeçalho fique por cima de tudo na rolagem */
-}
-
-/* 2.1 Remove o fundo branco das novas caixas de rolagem do PrimeNG */
+::ng-deep .p-datatable table,
 ::ng-deep .p-datatable-scrollable-header,
-::ng-deep .p-datatable-scrollable-wrapper {
+::ng-deep .p-datatable-scrollable-wrapper,
+::ng-deep .p-datatable .p-datatable-tbody > tr,
+::ng-deep .p-datatable .p-datatable-tbody > tr > td {
     background: transparent !important;
 }
 
-/* 3. Linhas e células totalmente transparentes */
-::ng-deep .p-datatable .p-datatable-tbody > tr,
+/* Cabeçalho fixo com cor sólida para esconder rolagem */
+::ng-deep .p-datatable .p-datatable-thead > tr > th,
+::ng-deep .p-datatable-scrollable .p-datatable-thead > tr > th {
+    background-color: var(--color-surface) !important;
+    border-bottom: 1px solid #a1a1aa1a !important;
+    color: var(--color-secondary) !important;
+    z-index: 1;
+}
+
+/* Bordas sutis nas linhas e hover */
 ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
-    background-color: transparent !important;
     border-bottom: 1px solid #a1a1aa0d !important;
 }
 
-/* 4. Efeito hover (passar o mouse) suave nas linhas */
 ::ng-deep .p-datatable .p-datatable-tbody > tr:hover,
 ::ng-deep .p-datatable .p-datatable-tbody > tr:hover > td {
     background-color: #ffffff08 !important;
 }
 
-/* 5. Paginador  */
-::ng-deep .p-paginator {
-    background-color: transparent !important;
-    border: none !important;
-    margin-top: 1rem;
-}
-
+/* Paginador - Fundo e botões padrão */
+::ng-deep .p-paginator,
 ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page,
 ::ng-deep .p-paginator .p-paginator-first,
 ::ng-deep .p-paginator .p-paginator-prev,
 ::ng-deep .p-paginator .p-paginator-next,
 ::ng-deep .p-paginator .p-paginator-last {
-    color: var(--color-text) !important;
     background-color: transparent !important;
+    color: var(--color-text) !important;
+    border: none !important;
     border-radius: 8px !important;
 }
+::ng-deep .p-paginator { margin-top: 1rem; }
 
-/* Destaca a página atual com o nosso Verde da Marca (Forçando para o PrimeNG 18/Aura) */
+/* Paginador - Botão Ativo (Verde da marca) */
 ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page.p-highlight,
 ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page[data-p-highlight="true"],
 ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page[aria-current="page"] {
@@ -58,47 +54,92 @@
     color: #ffffff !important;
     border-color: var(--color-brand) !important;
 }
-
-/* Efeito ao passar o mouse sobre o botão ativo para não perder a cor */
 ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page.p-highlight:hover,
 ::ng-deep .p-paginator .p-paginator-pages .p-paginator-page[data-p-highlight="true"]:hover {
     background-color: var(--color-brand-dark) !important;
 }
 
-/* Ajustes para o Modal e Formulários PrimeNG no Dark Mode */
-::ng-deep .p-dialog-header {
-    background-color: transparent !important;
-    border-bottom: 1px solid #a1a1aa1a !important;
-    color: var(--color-title) !important;
-    padding: 1.5rem !important;
+/* =========================================
+   2. MODAL DE TRANSAÇÕES (DIALOG)
+   ========================================= */
+
+/* Fundo do Modal com Efeito Vidro (Glassmorphism) */
+::ng-deep .p-dialog {
+    background-color: rgba(32, 32, 36, 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    border: 1px solid #a1a1aa1a !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
 }
 
+/* Header e Content transparentes para o vidro aparecer */
+::ng-deep .p-dialog-header,
 ::ng-deep .p-dialog-content {
     background-color: transparent !important;
     padding: 1.5rem !important;
 }
-
-::ng-deep .p-dialog-header-icons .p-dialog-header-icon {
-    color: var(--color-secondary) !important;
-    
-
+::ng-deep .p-dialog-header {
+    border-bottom: 1px solid #a1a1aa1a !important;
 }
 
+/* Título H1 do Modal (Branco e forte) */
+::ng-deep .p-dialog-title {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 1.25rem !important;
+}
+
+/* Ícone de fechar (X) */
+::ng-deep .p-dialog-header-icons .p-dialog-header-icon {
+    color: var(--color-secondary) !important;
+}
 ::ng-deep .p-dialog-header-icons .p-dialog-header-icon:hover {
     background-color: #ffffff0d !important;
     color: var(--color-title) !important;
 }
 
-::ng-deep .p-inputnumber-input,
-::ng-deep .p-datepicker-input {
+/* =========================================
+   3. INPUTS DO FORMULÁRIO (DENTRO DO MODAL)
+   ========================================= */
+
+/* Padroniza fundo escuro e cor do texto (remove o vermelho) */
+::ng-deep .p-dialog .p-inputtext,
+::ng-deep .p-dialog .p-inputnumber-input,
+::ng-deep .p-dialog .p-select,
+::ng-deep .p-dialog .p-datepicker-input {
     background-color: var(--color-input) !important;
+    color: var(--color-title) !important; 
     border: 1px solid #a1a1aa33 !important;
-    color: var(--color-text) !important;
     border-radius: 0.5rem !important;
     width: 100% !important;
 }
 
-::ng-deep .p-inputnumber-input:focus,
-::ng-deep .p-datepicker-input:focus {
+/* Efeito ao focar no campo (Verde) */
+::ng-deep .p-dialog .p-inputtext:enabled:focus,
+::ng-deep .p-dialog .p-inputnumber-input:enabled:focus,
+::ng-deep .p-dialog .p-select:not(.p-disabled).p-focus,
+::ng-deep .p-dialog .p-datepicker-input:enabled:focus {
     border-color: var(--color-brand) !important;
+    box-shadow: 0 0 0 1px var(--color-brand) !important;
+}
+
+/* =========================================
+   4. LISTAS SUSPENSAS (CATEGORIA, CONTA E DATA)
+   ========================================= */
+
+/* Fundo das caixinhas que abrem ao clicar no select ou calendário */
+::ng-deep .p-select-panel,
+::ng-deep .p-datepicker {
+    background-color: var(--color-surface) !important;
+    border: 1px solid #a1a1aa1a !important;
+    color: var(--color-text) !important;
+}
+
+::ng-deep .p-select-item {
+    color: var(--color-text) !important;
+}
+
+::ng-deep .p-select-item:not(.p-highlight):not(.p-disabled):hover {
+    background-color: #ffffff0d !important;
+    color: var(--color-title) !important;
 }

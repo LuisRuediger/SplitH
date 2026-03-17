@@ -1,5 +1,6 @@
-<div class="h-full flex flex-col bg-background">
+<p-toast position="top-right" />
 
+<div class="h-full flex flex-col bg-background">
     <div class="p-6 rounded-lg shadow-sm flex flex-col flex-1 min-h-0">
 
         <div class="shrink-0 flex justify-between items-center mb-6">
@@ -21,7 +22,7 @@
             <div class="relative w-72">
                 <i class="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-secondary"></i>
                 <input pInputText type="text" placeholder="Buscar descrição..."
-                    class="w-full pl-10 bg-background border-zinc-400/20 text-text placeholder:text-secondary rounded-lg" />
+                    class="w-full pl-10 bg-background border border-zinc-400/20 text-text placeholder:text-secondary rounded-lg" />
             </div>
             <button class="p-2 text-secondary hover:text-title transition-colors border border-zinc-400/20 rounded-lg">
                 <i class="pi pi-filter"></i>
@@ -68,7 +69,7 @@
 
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td colspan="4" class="text-center p-8 text-secondary">
+                        <td colspan="6" class="text-center p-8 text-secondary">
                             Nenhuma transação encontrada.
                         </td>
                     </tr>
@@ -107,32 +108,40 @@
         <div>
             <label class="block text-xs text-secondary font-medium mb-2">Valor</label>
             <p-inputNumber formControlName="amount" mode="currency" currency="BRL" locale="pt-BR" placeholder="R$ 0,00"
-                styleClass="w-full" [ngClass]="{'ng-invalid ng-dirty': isInvalid('amount')}" />
+                styleClass="w-full" [ngClass]="{'border-expense': isInvalid('amount')}" />
+             <small *ngIf="isInvalid('amount')" class="text-expense text-xs mt-1 block">O valor é obrigatório.</small>
         </div>
 
         <div>
             <label class="block text-xs text-secondary font-medium mb-2">Descrição</label>
             <input pInputText formControlName="description" placeholder="Ex: Compra no supermercado"
-                class="w-full bg-input border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand"
-                [ngClass]="{'border-expense': isInvalid('description')}" />
+                class="w-full bg-input border border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand"
+                [ngClass]="{'!border-expense': isInvalid('description')}" />
+            <small *ngIf="isInvalid('description')" class="text-expense text-xs mt-1 block">A descrição é obrigatória.</small>
         </div>
 
         <div>
             <label class="block text-xs text-secondary font-medium mb-2">Categoria</label>
             <p-select formControlName="category" [options]="categories" optionLabel="label" optionValue="value"
                 placeholder="Selecione uma categoria" [editable]="true"
-                styleClass="w-full bg-input border-zinc-700/50" />
+                styleClass="w-full bg-input border-zinc-700/50" 
+                [ngClass]="{'border-expense': isInvalid('category')}"/>
+            <small *ngIf="isInvalid('category')" class="text-expense text-xs mt-1 block">A categoria é obrigatória.</small>
         </div>
 
         <div>
             <label class="block text-xs text-secondary font-medium mb-2">Conta</label>
             <p-select formControlName="account" [options]="accounts" optionLabel="label" optionValue="value"
-                placeholder="Selecione uma conta" styleClass="w-full bg-input border-zinc-700/50" />
+                placeholder="Selecione uma conta" styleClass="w-full bg-input border-zinc-700/50" 
+                [ngClass]="{'border-expense': isInvalid('account')}"/>
+            <small *ngIf="isInvalid('account')" class="text-expense text-xs mt-1 block">A conta é obrigatória.</small>
         </div>
 
         <div>
             <label class="block text-xs text-secondary font-medium mb-2">Data</label>
-            <p-datepicker formControlName="date" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full" />
+            <p-datepicker formControlName="date" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full" 
+                [ngClass]="{'border-expense': isInvalid('date')}"/>
+            <small *ngIf="isInvalid('date')" class="text-expense text-xs mt-1 block">A data é obrigatória.</small>
         </div>
 
         <div class="flex items-center justify-between py-2 border-t border-zinc-700/30 mt-2">
