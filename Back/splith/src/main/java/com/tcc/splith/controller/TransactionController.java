@@ -1,0 +1,70 @@
+package com.tcc.splith.controller;
+
+import com.tcc.splith.config.JWTUserData;
+import com.tcc.splith.entity.Transaction;
+import com.tcc.splith.entity.User;
+import com.tcc.splith.repository.TransactionRepository;
+import com.tcc.splith.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@RestController
+@RequestMapping("/transactions")
+public class TransactionController {
+
+    private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
+
+    public TransactionController(TransactionRepository transactionRepository, UserRepository userRepository) {
+        this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository;
+    }
+
+    // Criamos um Record interno para receber os dados do Angular
+    public record TransactionRequest(String description, BigDecimal amount, LocalDate date, String category,
+                                     String account, String groupName, String type) {
+    }
+
+    @PostMapping
+    public ResponseEntity<Transaction> createTransaction(@RequestBody TransactionRequest request) {
+        // Pega os dados do usuário logado via Token JWT
+        JWTUserData loggedUser = (JWTUserData) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(loggedUser.userId()).orElseThrow();
+
+        // Monta a transação e salva
+        Transaction t = new Transaction();
+        t.setUser(user);
+        t.setDescription(request.description());
+        t.setAmount(request.amount());
+        t.setDate(request.date());
+        t.setCategory(request.category());
+        t.setAccount(request.account());
+        t.setGroupName(request.groupName());
+        t.setType(request.type());
+
+        Transaction saved = transactionRepository.save(t);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+
+
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Transaction>> getUserTransactions() {
+        // 1. Descobre quem é o usuário logado pelo Token
+        JWTUserData loggedUser = (JWTUserData) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(loggedUser.userId()).orElseThrow();
+
+        // 2. Busca no banco só as transações dele
+        List<Transaction> transactions = transactionRepository.findByUserOrderByIdDesc(user);
+
+        // 3. Devolve a lista para o Angular
+        return ResponseEntity.ok(transactions);
+    }
+
+}
