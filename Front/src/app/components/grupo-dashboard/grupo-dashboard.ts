@@ -133,6 +133,10 @@ export class GrupoDashboardComponent {
     return this.transactions.reduce((total, item) => total + item.totalAmount, 0)
   }
 
+  get totalUserShare(): number {
+    return this.transactions.reduce((total, item) => total + item.userShare, 0)
+  }
+
   formatCurrency(valor: number): string {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
