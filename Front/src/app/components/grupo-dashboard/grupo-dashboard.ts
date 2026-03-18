@@ -129,6 +129,10 @@ export class GrupoDashboardComponent {
     };
   }
 
+  get totalAmount(): number {
+    return this.transactions.reduce((total, item) => total + item.totalAmount, 0)
+  }
+
   formatCurrency(valor: number): string {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
