@@ -118,7 +118,7 @@
       [value]="transactions"
       [paginator]="transactions.length > 0"
       [rows]="5"
-      [rowsPerPageOptions]="[5, 10, 25]"
+      [rowsPerPageOptions]="[5, 10, 25, { showAll: 'Todas' }]"
       [globalFilterFields]="['description', 'paidBy', 'category']"
       [sortMode]="'multiple'"
       styleClass="transactions-table"
