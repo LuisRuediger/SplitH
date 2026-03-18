@@ -78,7 +78,7 @@ export class Transactions implements OnInit {
       account: [null, Validators.required],
       date: [new Date(), Validators.required], // Inicia com a data de hoje
       isShared: [false],
-      sharedGroups: [[]]
+      sharedGroups: [null]
     });
   }
 
@@ -116,7 +116,7 @@ export class Transactions implements OnInit {
 
   // Métodos do Modal
   showModal() {
-    this.transactionForm.reset({ type: 'EXPENSE', date: new Date(), isShared: false, sharedGroups: [] });
+    this.transactionForm.reset({ type: 'EXPENSE', date: new Date(), isShared: false, sharedGroups: null });
     this.displayModal = true;
   }
 
@@ -143,7 +143,7 @@ export class Transactions implements OnInit {
         date: formattedDate,
         category: formValues.category,
         account: formValues.account,
-        groupName: formValues.isShared ? formValues.sharedGroups.join(', ') : 'Pessoal',
+        groupName: formValues.isShared ? formValues.sharedGroups : 'Pessoal',
         type: formValues.type
       };
 

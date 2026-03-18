@@ -150,9 +150,9 @@
         </div>
 
         <div *ngIf="transactionForm.get('isShared')?.value" class="animate-slideUp -mt-2">
-            <label class="block text-xs text-secondary font-medium mb-2">Selecione os Grupos</label>
-            <p-multiselect formControlName="sharedGroups" [options]="groups" optionLabel="label" optionValue="value"
-                placeholder="Escolha um ou mais grupos" styleClass="w-full bg-input border-zinc-700/50" />
+            <label class="block text-xs text-secondary font-medium mb-2">Selecione o Grupo</label>
+            <p-select formControlName="sharedGroups" [options]="groups" optionLabel="label" optionValue="value"
+                placeholder="Escolha um grupo" styleClass="w-full bg-input border-zinc-700/50" />
         </div>
 
         <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-700/30">
