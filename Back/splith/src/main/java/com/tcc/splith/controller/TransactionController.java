@@ -67,4 +67,44 @@ public class TransactionController {
         return ResponseEntity.ok(transactions);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Transaction> updateTransaction(@PathVariable Long id, @RequestBody TransactionRequest request) {
+        JWTUserData loggedUser = (JWTUserData) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(loggedUser.userId()).orElseThrow();
+
+        // Busca a transação e garante que ela existe
+        Transaction t = transactionRepository.findById(id).orElseThrow();
+
+        // Regra de segurança: O usuário só pode editar as próprias transações!
+        if (!t.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        // Atualiza os dados
+        t.setDescription(request.description());
+        t.setAmount(request.amount());
+        t.setDate(request.date());
+        t.setCategory(request.category());
+        t.setAccount(request.account());
+        t.setGroupName(request.groupName());
+        t.setType(request.type());
+
+        return ResponseEntity.ok(transactionRepository.save(t));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
+        JWTUserData loggedUser = (JWTUserData) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(loggedUser.userId()).orElseThrow();
+
+        Transaction t = transactionRepository.findById(id).orElseThrow();
+
+        if (!t.getUser().getId().equals(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        transactionRepository.delete(t);
+        return ResponseEntity.noContent().build();
+    }
+
 }
