@@ -1,4 +1,7 @@
 <p-toast position="top-right" />
+<p-confirmDialog [style]="{width: '450px'}" rejectButtonStyleClass="p-button-text" />
+
+<p-menu #menu [popup]="true" [model]="menuItems" appendTo="body" styleClass="w-48 bg-surface border-zinc-700/50" />
 
 <div class="h-full flex flex-col bg-background">
     <div class="p-6 rounded-lg shadow-sm flex flex-col flex-1 min-h-0">
@@ -41,6 +44,8 @@
                         <th class="font-medium text-sm">Conta</th>
                         <th class="font-medium text-sm">Grupo</th>
                         <th class="font-medium text-sm text-right">Valor</th>
+                        <th class="font-medium text-sm text-right">Valor</th>
+                        <th class="w-12"></th>
                     </tr>
                 </ng-template>
 
@@ -64,6 +69,19 @@
                             {{ transaction.type === 'INCOME' ? '+ ' : '- ' }}
                             {{ transaction.amount | currency:'BRL':'symbol':'1.2-2' }}
                         </td>
+
+                        <td class="border-b border-zinc-400/10 text-right font-medium"
+                            [ngClass]="transaction.type === 'INCOME' ? 'text-income' : 'text-expense'">
+                            {{ transaction.type === 'INCOME' ? '+ ' : '- ' }}
+                            {{ transaction.amount | currency:'BRL':'symbol':'1.2-2' }}
+                        </td>
+                        <td class="border-b border-zinc-400/10 text-center">
+                            <button type="button"
+                                class="p-2 text-secondary hover:text-title hover:bg-zinc-700/30 rounded-lg transition-colors cursor-pointer"
+                                (click)="openMenu($event, menu, transaction)">
+                                <i class="pi pi-ellipsis-v text-sm"></i>
+                            </button>
+                        </td>
                     </tr>
                 </ng-template>
 
@@ -80,7 +98,7 @@
     </div>
 </div>
 
-<p-dialog [(visible)]="displayModal" [modal]="true" [draggable]="false" [resizable]="false" header="Adicionar Transação"
+<p-dialog [(visible)]="displayModal" [modal]="true" [draggable]="false" [resizable]="false" [header]="editingId ? 'Editar Transação' : 'Adicionar Transação'"
     styleClass="w-full max-w-[480px] bg-surface border border-zinc-700/50 shadow-2xl rounded-2xl">
 
     <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="mt-4 flex flex-col gap-5">
@@ -109,7 +127,7 @@
             <label class="block text-xs text-secondary font-medium mb-2">Valor</label>
             <p-inputNumber formControlName="amount" mode="currency" currency="BRL" locale="pt-BR" placeholder="R$ 0,00"
                 styleClass="w-full" [ngClass]="{'border-expense': isInvalid('amount')}" />
-             <small *ngIf="isInvalid('amount')" class="text-expense text-xs mt-1 block">O valor é obrigatório.</small>
+            <small *ngIf="isInvalid('amount')" class="text-expense text-xs mt-1 block">O valor é obrigatório.</small>
         </div>
 
         <div>
@@ -117,30 +135,31 @@
             <input pInputText formControlName="description" placeholder="Ex: Compra no supermercado"
                 class="w-full bg-input border border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand"
                 [ngClass]="{'border-expense!': isInvalid('description')}" />
-            <small *ngIf="isInvalid('description')" class="text-expense text-xs mt-1 block">A descrição é obrigatória.</small>
+            <small *ngIf="isInvalid('description')" class="text-expense text-xs mt-1 block">A descrição é
+                obrigatória.</small>
         </div>
 
         <div>
             <label class="block text-xs text-secondary font-medium mb-2">Categoria</label>
             <p-select formControlName="category" [options]="categories" optionLabel="label" optionValue="value"
-                placeholder="Selecione uma categoria" [editable]="true"
-                styleClass="w-full bg-input border-zinc-700/50" 
-                [ngClass]="{'border-expense': isInvalid('category')}"/>
-            <small *ngIf="isInvalid('category')" class="text-expense text-xs mt-1 block">A categoria é obrigatória.</small>
+                placeholder="Selecione uma categoria" [editable]="true" styleClass="w-full bg-input border-zinc-700/50"
+                [ngClass]="{'border-expense': isInvalid('category')}" />
+            <small *ngIf="isInvalid('category')" class="text-expense text-xs mt-1 block">A categoria é
+                obrigatória.</small>
         </div>
 
         <div>
             <label class="block text-xs text-secondary font-medium mb-2">Conta</label>
             <p-select formControlName="account" [options]="accounts" optionLabel="label" optionValue="value"
-                placeholder="Selecione uma conta" styleClass="w-full bg-input border-zinc-700/50" 
-                [ngClass]="{'border-expense': isInvalid('account')}"/>
+                placeholder="Selecione uma conta" styleClass="w-full bg-input border-zinc-700/50"
+                [ngClass]="{'border-expense': isInvalid('account')}" />
             <small *ngIf="isInvalid('account')" class="text-expense text-xs mt-1 block">A conta é obrigatória.</small>
         </div>
 
         <div>
             <label class="block text-xs text-secondary font-medium mb-2">Data</label>
-            <p-datepicker formControlName="date" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full" 
-                [ngClass]="{'border-expense': isInvalid('date')}"/>
+            <p-datepicker formControlName="date" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full"
+                [ngClass]="{'border-expense': isInvalid('date')}" />
             <small *ngIf="isInvalid('date')" class="text-expense text-xs mt-1 block">A data é obrigatória.</small>
         </div>
 
@@ -162,7 +181,7 @@
             </button>
             <button type="submit"
                 class="px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-brand hover:bg-brand-dark transition-colors cursor-pointer shadow-md">
-                Adicionar Transação
+                {{ editingId ? 'Salvar Alterações' : 'Adicionar Transação' }}
             </button>
         </div>
     </form>

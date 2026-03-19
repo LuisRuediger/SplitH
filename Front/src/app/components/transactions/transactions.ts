@@ -13,6 +13,9 @@ import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { TransactionService } from '../../core/services/transaction-service';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem, ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-transactions',
@@ -29,9 +32,11 @@ import { TransactionService } from '../../core/services/transaction-service';
     ToggleSwitchModule,
     MultiSelectModule,
     DialogModule,
-    ToastModule
+    ToastModule,
+    MenuModule,
+    ConfirmDialogModule
   ],
-  providers: [MessageService],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css'
 })
@@ -39,12 +44,13 @@ export class Transactions implements OnInit {
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private transactionService = inject(TransactionService);
+  private confirmationService = inject(ConfirmationService);
 
   // Controle do Modal
   displayModal = false;
   transactionForm: FormGroup;
 
-  // Listas de Seleção (Mocks que depois virão do Banco de Dados)
+  // Listas de Seleção
   categories = [
     { label: 'Alimentação', value: 'Alimentação' },
     { label: 'Transporte', value: 'Transporte' },
@@ -67,7 +73,10 @@ export class Transactions implements OnInit {
     { label: 'Churrasco', value: 'Churrasco' }
   ];
 
-  transactionsList: any[] = [ ];
+  transactionsList: any[] = [];
+  menuItems: MenuItem[] = [];
+  selectedTransaction: any = null;
+  editingId: number | null = null;
 
   constructor() {
     this.transactionForm = this.fb.group({
@@ -84,6 +93,11 @@ export class Transactions implements OnInit {
 
   ngOnInit() {
     this.loadTransactions();
+
+    this.menuItems = [
+      { label: 'Editar', icon: 'pi pi-pencil', command: () => this.editTransaction(this.selectedTransaction) },
+      { label: 'Excluir', icon: 'pi pi-trash', command: () => this.confirmDelete(this.selectedTransaction) }
+    ];
   }
 
   // Função que vai no Java buscar os dados
@@ -114,68 +128,111 @@ export class Transactions implements OnInit {
     });
   }
 
+  openMenu(event: Event, menu: any, transaction: any) {
+    this.selectedTransaction = transaction; // Guarda em qual linha clicamos
+    menu.toggle(event); // Abre a caixinha
+  }
+
+  editTransaction(transaction: any) {
+    this.editingId = transaction.id; // Salva o ID que estamos editando
+
+    // Converte a data "DD/MM/YYYY" da tabela de volta para o calendário do PrimeNG
+    const dateParts = transaction.date.split('/');
+    const dateObj = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+
+    const isShared = transaction.group !== 'Pessoal';
+
+    // Preenche a janelinha com os dados antigos
+    this.transactionForm.patchValue({
+      type: transaction.type,
+      amount: transaction.amount,
+      description: transaction.description,
+      category: transaction.category,
+      account: transaction.account,
+      date: dateObj,
+      isShared: isShared,
+      sharedGroups: isShared ? transaction.group : null
+    });
+
+    this.displayModal = true;
+  }
+
+  confirmDelete(transaction: any) {
+    this.confirmationService.confirm({
+      message: `Tem certeza que deseja excluir "${transaction.description}"?`,
+      header: 'Confirmar Exclusão',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, excluir',
+      rejectLabel: 'Cancelar',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.transactionService.delete(transaction.id).subscribe({
+          next: () => {
+            this.messageService.add({ severity: 'success', summary: 'Excluído', detail: 'Transação removida.' });
+            this.loadTransactions(); // Recarrega a tabela
+          },
+          error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível excluir.' })
+        });
+      }
+    });
+  }
+
   // Métodos do Modal
   showModal() {
+    this.editingId = null; // Garante que é uma criação nova
     this.transactionForm.reset({ type: 'EXPENSE', date: new Date(), isShared: false, sharedGroups: null });
     this.displayModal = true;
   }
 
   hideModal() {
     this.displayModal = false;
+    this.editingId = null; 
   }
 
   setTransactionType(type: 'INCOME' | 'EXPENSE') {
     this.transactionForm.get('type')?.setValue(type);
   }
 
- onSubmit() {
+  onSubmit() {
     if (this.transactionForm.valid) {
       const formValues = this.transactionForm.value;
       const dateObj = formValues.date as Date;
-      
-      // Formata a data para YYYY-MM-DD (Padrão que o Java entende perfeitamente)
       const formattedDate = dateObj.toISOString().split('T')[0];
 
-      // 1. Objeto "Payload": Formatado exatamente como o Backend (Java) espera
       const transactionPayload = {
         description: formValues.description,
         amount: formValues.amount,
         date: formattedDate,
         category: formValues.category,
         account: formValues.account,
-        groupName: formValues.isShared ? formValues.sharedGroups : 'Pessoal',
+        groupName: (formValues.isShared && formValues.sharedGroups) ? formValues.sharedGroups : 'Pessoal',
         type: formValues.type
       };
 
-     this.transactionService.create(transactionPayload).subscribe({
-        next: (response) => {
-          
-          this.loadTransactions(); // <-- Chama a função para recarregar a tabela do zero!
-
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Sucesso',
-            detail: 'Transação salva no banco de dados!',
-            life: 3000
-          });
-
-          this.hideModal();
-        },
-        error: (err) => {
-          console.error('Erro ao salvar transação', err);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Não foi possível salvar a transação.',
-            life: 3000
-          });
-        }
-      });
+      // SE TEM UM ID, ENTÃO É EDIÇÃO (PUT). SE NÃO, É CRIAÇÃO (POST).
+      if (this.editingId) {
+        this.transactionService.update(this.editingId, transactionPayload).subscribe({
+          next: () => {
+            this.loadTransactions();
+            this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Transação atualizada!' });
+            this.hideModal();
+          },
+          error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao atualizar.' })
+        });
+      } else {
+        this.transactionService.create(transactionPayload).subscribe({
+          next: () => {
+            this.loadTransactions();
+            this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Transação salva!' });
+            this.hideModal();
+          },
+          error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar.' })
+        });
+      }
     } else {
       this.transactionForm.markAllAsTouched();
     }
   }
-
 
   // Helper para erros no form
   isInvalid(controlName: string) {

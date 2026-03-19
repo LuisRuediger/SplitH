@@ -16,4 +16,12 @@ export class TransactionService {
   getAll(): Observable<any[]> {
     return this.http.get<any[]>(this.api);
   }
+
+  update(id: number, transaction: any): Observable<any> {
+    return this.http.put(`${this.api}/${id}`, transaction);
+  }
+
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.api}/${id}`);
+  }
 }
