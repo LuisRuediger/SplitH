@@ -1,32 +1,85 @@
-<aside class="w-64 bg-brand-dark border-r border-brand/20 h-full flex flex-col shadow-sm">
-    <nav class="flex-1 px-4 py-6 space-y-2">
+<p-toast position="bottom-left" />
+
+<aside class="w-64 bg-surface border-r border-zinc-700/30 h-full flex flex-col shadow-lg z-10">
+    <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
         
-        <a routerLink="/dashboard" routerLinkActive="bg-brand/10 text-brand" [routerLinkActiveOptions]="{exact: true}" 
-           class="flex items-center gap-3 px-3 py-2 text-text rounded-lg hover:bg-background hover:text-title transition-colors cursor-pointer">
-            <i class="pi pi-home"></i> 
-            <span class="font-medium">Home</span>
+        <p class="px-3 text-[10px] font-bold text-secondary uppercase tracking-widest mb-2 mt-2">Menu Principal</p>
+
+        <a routerLink="/dashboard" routerLinkActive="bg-brand/10 text-brand font-semibold" [routerLinkActiveOptions]="{exact: true}" 
+           class="flex items-center gap-3 px-3 py-2.5 text-text rounded-xl hover:bg-zinc-700/30 hover:text-title transition-all cursor-pointer group">
+            <i class="pi pi-home text-secondary group-hover:text-brand transition-colors" [ngClass]="{'text-brand': true}"></i> 
+            <span class="text-sm">Home</span>
         </a>
 
-        <a routerLink="/transactions" routerLinkActive="bg-brand/10 text-brand"
-           class="flex items-center gap-3 px-3 py-2 text-text rounded-lg hover:bg-background hover:text-title transition-colors cursor-pointer">
-            <i class="pi pi-list"></i> 
-            <span class="font-medium">Transações</span>
+        <a routerLink="/transactions" routerLinkActive="bg-brand/10 text-brand font-semibold"
+           class="flex items-center gap-3 px-3 py-2.5 text-text rounded-xl hover:bg-zinc-700/30 hover:text-title transition-all cursor-pointer group">
+            <i class="pi pi-list text-secondary group-hover:text-brand transition-colors"></i> 
+            <span class="text-sm">Transações</span>
         </a>
 
-        <div class="h-px bg-zinc-400/10 my-6"></div> 
+        <div class="h-px bg-zinc-700/40 my-6 mx-3"></div> 
 
-        <div class="px-3 mb-3 flex items-center justify-between">
-            <span class="text-xs font-semibold text-text uppercase tracking-wider">Meus Grupos</span>
-            <button class="text-brand hover:text-brand-dark transition-colors" title="Novo Grupo">
-                <i class="pi pi-plus text-sm"></i>
+        <div class="px-3 mb-4 flex items-center justify-between">
+            <span class="text-[10px] font-bold text-secondary uppercase tracking-widest">Meus Grupos</span>
+            
+            <button (click)="showModal()" class="w-6 h-6 rounded-md flex items-center justify-center bg-zinc-700/30 text-secondary hover:text-brand hover:bg-brand/10 transition-all cursor-pointer" title="Novo Grupo">
+                <i class="pi pi-plus text-xs"></i>
             </button>
         </div>
         
-        <a *ngFor="let grupo of grupos" href="#" 
-           class="flex items-center gap-3 px-3 py-2 text-text rounded-lg hover:bg-background hover:text-title transition-colors cursor-pointer">
-            <i class="pi pi-users text-sm"></i> 
-            <span class="font-medium text-sm">{{ grupo.nome }}</span>
-        </a>
-
+        @if (isLoading) {
+            <div class="flex justify-center py-4">
+                <i class="pi pi-spin pi-spinner text-secondary animate-spin"></i>
+            </div>
+        } @else {
+            @for (grupo of grupos; track grupo.id) {
+                <a routerLink="/group" [queryParams]="{ id: grupo.id }" routerLinkActive="bg-brand/10 text-brand font-semibold"
+                   class="flex items-center gap-3 px-3 py-2 text-text rounded-xl hover:bg-zinc-700/30 hover:text-title transition-all cursor-pointer group">
+                    <div class="w-6 h-6 rounded-md bg-zinc-700/50 flex items-center justify-center text-xs font-bold text-secondary group-hover:bg-brand group-hover:text-white transition-colors">
+                        {{ grupo.name.charAt(0) | uppercase }}
+                    </div>
+                    <span class="text-sm truncate">{{ grupo.name }}</span>
+                </a>
+            }
+            
+            @if (grupos.length === 0) {
+                <div class="px-3 py-4 text-center bg-background/50 rounded-xl border border-dashed border-zinc-700/50">
+                    <p class="text-xs text-secondary">Você não participa de nenhum grupo.</p>
+                </div>
+            }
+        }
     </nav>
 </aside>
+
+<p-dialog [(visible)]="displayModal" [modal]="true" [draggable]="false" [resizable]="false" header="Novo Grupo"
+    styleClass="w-full max-w-[400px] bg-surface border border-zinc-700/50 shadow-2xl rounded-2xl">
+
+    <form [formGroup]="groupForm" (ngSubmit)="onSubmit()" class="mt-4 flex flex-col gap-5">
+        
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Nome do Grupo</label>
+            <input pInputText formControlName="name" placeholder="Ex: Apartamento 402, Viagem Praia..."
+                class="w-full bg-input border border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand"
+                [ngClass]="{'border-expense': isInvalid('name')}" />
+            <small *ngIf="isInvalid('name')" class="text-expense text-xs mt-1 block">O nome é obrigatório (máx 30 letras).</small>
+        </div>
+
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Descrição (Opcional)</label>
+            <input pInputText formControlName="description" placeholder="Ex: Despesas da nossa viagem em janeiro"
+                class="w-full bg-input border border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand" />
+        </div>
+
+        <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-700/30">
+            <button type="button" (click)="hideModal()"
+                class="px-5 py-2.5 rounded-lg text-sm font-medium text-text bg-transparent hover:bg-zinc-700/30 transition-colors cursor-pointer">
+                Cancelar
+            </button>
+            <button type="submit" [disabled]="isSaving"
+                class="px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-brand hover:bg-brand-dark transition-colors cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="pi pi-spin pi-spinner mr-2" *ngIf="isSaving"></i>
+                {{ isSaving ? 'Salvando...' : 'Criar Grupo' }}
+            </button>
+        </div>
+    </form>
+</p-dialog>
