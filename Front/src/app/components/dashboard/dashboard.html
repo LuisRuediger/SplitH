@@ -1,1 +1,130 @@
-<div class="bg-background h-full w-full text-text text-justify inset-0"> o resto vai aqui! </div>
+<div class="p-8 h-full overflow-y-auto bg-background animate-slideUp">
+    
+  <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-title">Meu Painel</h1>
+            <p class="text-secondary text-sm mt-1">Visão geral das suas finanças pessoais</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+            <p-select 
+                [options]="periodOptions" 
+                [(ngModel)]="selectedPeriod" 
+                (onChange)="onPeriodChange()"
+                optionLabel="label" 
+                optionValue="value"
+                styleClass="w-full sm:w-48 bg-surface border-zinc-700/50" />
+
+            <p-datepicker 
+                *ngIf="selectedPeriod === 'custom'"
+                [(ngModel)]="customDateRange" 
+                selectionMode="range" 
+                [readonlyInput]="true"
+                dateFormat="dd/mm/yy"
+                placeholder="Selecione o período"
+                [showIcon]="true"
+                (onSelect)="onCustomDateChange()"
+                styleClass="w-full sm:w-68 bg-surface border-zinc-700/50 animate-slideUp" />
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-8">
+        
+        <div class="bg-surface border border-zinc-700/30 rounded-2xl p-4 lg:p-6 hover:border-zinc-600/50 transition-all shadow-sm min-w-0">
+            <div class="flex items-center justify-between mb-3 lg:mb-4">
+                <p class="text-secondary text-xs lg:text-sm font-medium">Saldo Atual</p>
+                <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-brand/10 flex items-center justify-center shrink-0">
+                    <i class="pi pi-wallet text-brand text-lg lg:text-xl"></i>
+                </div>
+            </div>
+            <p class="text-xl lg:text-2xl xl:text-3xl font-bold truncate" 
+               [ngClass]="balance >= 0 ? 'text-title' : 'text-expense'" 
+               [title]="balance | currency:'BRL':'symbol':'1.2-2'">
+                {{ balance | currency:'BRL':'symbol':'1.2-2' }}
+            </p>
+        </div>
+
+        <div class="bg-surface border border-zinc-700/30 rounded-2xl p-4 lg:p-6 hover:border-zinc-600/50 transition-all shadow-sm min-w-0">
+            <div class="flex items-center justify-between mb-3 lg:mb-4">
+                <p class="text-secondary text-xs lg:text-sm font-medium">Receitas</p>
+                <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-income/10 flex items-center justify-center shrink-0">
+                    <i class="pi pi-arrow-up text-income text-lg lg:text-xl"></i>
+                </div>
+            </div>
+            <p class="text-income text-xl lg:text-2xl xl:text-3xl font-bold truncate" 
+               [title]="totalIncome | currency:'BRL':'symbol':'1.2-2'">
+                {{ totalIncome | currency:'BRL':'symbol':'1.2-2' }}
+            </p>
+        </div>
+
+        <div class="bg-surface border border-zinc-700/30 rounded-2xl p-4 lg:p-6 hover:border-zinc-600/50 transition-all shadow-sm min-w-0">
+            <div class="flex items-center justify-between mb-3 lg:mb-4">
+                <p class="text-secondary text-xs lg:text-sm font-medium">Despesas</p>
+                <div class="w-8 h-8 lg:w-10 lg:h-10 rounded-xl bg-expense/10 flex items-center justify-center shrink-0">
+                    <i class="pi pi-arrow-down text-expense text-lg lg:text-xl"></i>
+                </div>
+            </div>
+            <p class="text-expense text-xl lg:text-2xl xl:text-3xl font-bold truncate" 
+               [title]="totalExpense | currency:'BRL':'symbol':'1.2-2'">
+                {{ totalExpense | currency:'BRL':'symbol':'1.2-2' }}
+            </p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <div class="bg-surface border border-zinc-700/30 rounded-2xl p-6 shadow-sm">
+            <h2 class="text-title text-base font-semibold mb-6">Despesas por Categoria</h2>
+            
+            <div *ngIf="totalExpense > 0; else noData" class="flex justify-center items-center h-[260px]">
+                <p-chart type="doughnut" [data]="chartData" [options]="chartOptions" height="260px"></p-chart>
+            </div>
+            
+            <ng-template #noData>
+                <div class="h-[260px] flex flex-col items-center justify-center text-secondary">
+                    <i class="pi pi-chart-pie text-4xl mb-3 opacity-50"></i>
+                    <p class="text-sm">Nenhuma despesa para exibir no gráfico.</p>
+                </div>
+            </ng-template>
+        </div>
+
+        <div class="bg-surface border border-zinc-700/30 rounded-2xl p-6 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-title text-base font-semibold">Últimas Transações</h2>
+                <a routerLink="/transactions" class="text-sm text-brand hover:text-brand-dark transition-colors font-medium">
+                    Ver todas
+                </a>
+            </div>
+
+            <div class="space-y-3 flex-1">
+                <div *ngFor="let t of recentTransactions" 
+                     class="flex items-center justify-between p-3 rounded-xl border border-zinc-700/20 bg-background/50 hover:bg-zinc-700/20 transition-colors">
+                    
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                             [ngClass]="t.type === 'INCOME' ? 'bg-income/10' : 'bg-expense/10'">
+                            <i class="pi text-sm" 
+                               [ngClass]="t.type === 'INCOME' ? 'pi-arrow-up text-income' : 'pi-arrow-down text-expense'"></i>
+                        </div>
+                        <div>
+                            <p class="text-title text-sm font-medium">{{ t.description }}</p>
+                            <p class="text-secondary text-xs mt-0.5">{{ t.category }} • {{ t.date }}</p>
+                        </div>
+                    </div>
+                    
+                    <p class="font-semibold text-sm whitespace-nowrap" 
+                       [ngClass]="t.type === 'INCOME' ? 'text-income' : 'text-expense'">
+                        {{ t.type === 'INCOME' ? '+ ' : '- ' }}
+                        {{ t.amount | currency:'BRL':'symbol':'1.2-2' }}
+                    </p>
+                </div>
+
+                <div *ngIf="recentTransactions.length === 0" class="flex flex-col items-center justify-center h-full text-secondary pt-8">
+                    <i class="pi pi-list text-3xl mb-3 opacity-50"></i>
+                    <p class="text-sm">Nenhuma transação recente.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
