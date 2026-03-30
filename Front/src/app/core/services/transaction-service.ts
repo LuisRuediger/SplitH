@@ -24,4 +24,9 @@ export class TransactionService {
   delete(id: number): Observable<any> {
     return this.http.delete(`${this.api}/${id}`);
   }
+
+  getByGroup(groupName: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.api}/group/${groupName}`);
+  }
+  
 }

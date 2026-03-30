@@ -13,6 +13,7 @@ import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { TransactionService } from '../../core/services/transaction-service';
+import { GroupService } from '../../core/services/group-service'; // <-- 1. Importamos o serviço de Grupos
 import { MenuModule } from 'primeng/menu';
 import { MenuItem, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -44,6 +45,7 @@ export class Transactions implements OnInit {
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private transactionService = inject(TransactionService);
+  private groupService = inject(GroupService); // <-- 2. Injetamos o serviço
   private confirmationService = inject(ConfirmationService);
 
   // Controle do Modal
@@ -56,7 +58,8 @@ export class Transactions implements OnInit {
     { label: 'Transporte', value: 'Transporte' },
     { label: 'Casa', value: 'Casa' },
     { label: 'Lazer', value: 'Lazer' },
-    { label: 'Utilidades', value: 'Utilidades' }
+    { label: 'Utilidades', value: 'Utilidades' },
+    { label: 'Saúde', value: 'Saúde' }
   ];
 
   accounts = [
@@ -67,11 +70,7 @@ export class Transactions implements OnInit {
     { label: 'Dinheiro', value: 'Dinheiro' }
   ];
 
-  groups = [
-    { label: 'Apartamento', value: 'Apartamento' },
-    { label: 'Viagem Praia', value: 'Viagem Praia' },
-    { label: 'Churrasco', value: 'Churrasco' }
-  ];
+  groups: { label: string, value: string }[] = []; // <-- 3. Agora começa vazio e recebe o tipo correto
 
   transactionsList: any[] = [];
   menuItems: MenuItem[] = [];
@@ -85,7 +84,7 @@ export class Transactions implements OnInit {
       description: ['', Validators.required],
       category: [null, Validators.required],
       account: [null, Validators.required],
-      date: [new Date(), Validators.required], // Inicia com a data de hoje
+      date: [new Date(), Validators.required], 
       isShared: [false],
       sharedGroups: [null]
     });
@@ -93,6 +92,7 @@ export class Transactions implements OnInit {
 
   ngOnInit() {
     this.loadTransactions();
+    this.loadGroups(); // <-- 4. Chama a busca de grupos ao abrir a tela
 
     this.menuItems = [
       { label: 'Editar', icon: 'pi pi-pencil', command: () => this.editTransaction(this.selectedTransaction) },
@@ -100,11 +100,11 @@ export class Transactions implements OnInit {
     ];
   }
 
-  // Função que vai no Java buscar os dados
+  // --- BUSCA DE DADOS ---
+
   loadTransactions() {
     this.transactionService.getAll().subscribe({
       next: (data) => {
-        // O Java manda a data como YYYY-MM-DD. Vamos formatar para DD/MM/YYYY para a tela ficar bonita
         this.transactionsList = data.map(t => {
           const dateParts = t.date.split('-');
           const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : t.date;
@@ -115,7 +115,7 @@ export class Transactions implements OnInit {
             description: t.description,
             category: t.category,
             account: t.account,
-            group: t.groupName, // O Java manda groupName, a tabela espera group
+            group: t.groupName, 
             type: t.type,
             amount: t.amount
           };
@@ -128,21 +128,34 @@ export class Transactions implements OnInit {
     });
   }
 
+  loadGroups() {
+    this.groupService.getAll().subscribe({
+      next: (data) => {
+        // Mapeia os grupos do banco (que tem id, name, description) para o formato do Dropdown (label, value)
+        this.groups = data.map(g => ({
+          label: g.name,
+          value: g.name // Salvamos o nome pois a sua entidade Transaction no Java espera uma String 'groupName'
+        }));
+      },
+      error: (err) => console.error('Erro ao carregar grupos', err)
+    });
+  }
+
+  // --- MÉTODOS DE AÇÃO NA TABELA ---
+
   openMenu(event: Event, menu: any, transaction: any) {
-    this.selectedTransaction = transaction; // Guarda em qual linha clicamos
-    menu.toggle(event); // Abre a caixinha
+    this.selectedTransaction = transaction; 
+    menu.toggle(event); 
   }
 
   editTransaction(transaction: any) {
-    this.editingId = transaction.id; // Salva o ID que estamos editando
+    this.editingId = transaction.id; 
 
-    // Converte a data "DD/MM/YYYY" da tabela de volta para o calendário do PrimeNG
     const dateParts = transaction.date.split('/');
     const dateObj = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
 
-    const isShared = transaction.group !== 'Pessoal';
+    const isShared = transaction.group && transaction.group !== 'Pessoal';
 
-    // Preenche a janelinha com os dados antigos
     this.transactionForm.patchValue({
       type: transaction.type,
       amount: transaction.amount,
@@ -169,7 +182,7 @@ export class Transactions implements OnInit {
         this.transactionService.delete(transaction.id).subscribe({
           next: () => {
             this.messageService.add({ severity: 'success', summary: 'Excluído', detail: 'Transação removida.' });
-            this.loadTransactions(); // Recarrega a tabela
+            this.loadTransactions(); 
           },
           error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível excluir.' })
         });
@@ -177,9 +190,10 @@ export class Transactions implements OnInit {
     });
   }
 
-  // Métodos do Modal
+  // --- MÉTODOS DO MODAL ---
+
   showModal() {
-    this.editingId = null; // Garante que é uma criação nova
+    this.editingId = null; 
     this.transactionForm.reset({ type: 'EXPENSE', date: new Date(), isShared: false, sharedGroups: null });
     this.displayModal = true;
   }
@@ -205,11 +219,11 @@ export class Transactions implements OnInit {
         date: formattedDate,
         category: formValues.category,
         account: formValues.account,
+        // Se ativou o toggle, manda o grupo escolhido. Se não, salva como 'Pessoal'
         groupName: (formValues.isShared && formValues.sharedGroups) ? formValues.sharedGroups : 'Pessoal',
         type: formValues.type
       };
 
-      // SE TEM UM ID, ENTÃO É EDIÇÃO (PUT). SE NÃO, É CRIAÇÃO (POST).
       if (this.editingId) {
         this.transactionService.update(this.editingId, transactionPayload).subscribe({
           next: () => {
@@ -234,7 +248,6 @@ export class Transactions implements OnInit {
     }
   }
 
-  // Helper para erros no form
   isInvalid(controlName: string) {
     const control = this.transactionForm.get(controlName);
     return control?.invalid && control?.touched;
