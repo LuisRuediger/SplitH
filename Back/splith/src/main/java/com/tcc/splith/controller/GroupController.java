@@ -27,6 +27,12 @@ public class GroupController {
     // Record para receber os dados do Angular
     public record GroupRequest(String name, String description) {}
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Group> getGroupById(@PathVariable Long id) {
+        Group group = groupRepository.findById(id).orElseThrow();
+        return ResponseEntity.ok(group);
+    }
+
     @PostMapping
     public ResponseEntity<Group> createGroup(@RequestBody GroupRequest request) {
         // 1. Descobre quem é o usuário logado

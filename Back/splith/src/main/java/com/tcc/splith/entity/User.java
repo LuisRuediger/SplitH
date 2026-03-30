@@ -23,6 +23,8 @@ public class User implements UserDetails {
     private Long id;
 
     private String name;
+
+    @JsonIgnore
     private String password;
     private String email;
 
