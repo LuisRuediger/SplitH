@@ -12,28 +12,53 @@
                 <p class="text-secondary text-sm mt-1">Gerencie as entradas e saídas</p>
             </div>
 
-            <button class="px-4 py-2 flex items-center 
-                gap-2 rounded-lg font-medium 
-                text-sm text-white bg-brand transition-colors
-                 hover:bg-brand-dark cursor-pointer shadow-md" (click)="showModal()">
-                <i class="pi pi-plus"></i>
-                Nova Transação
-            </button>
+            <div class="flex items-center gap-3">
+                <input type="file" #fileInput accept=".csv,.ofx" style="display: none;" (change)="onFileSelected($event)">
+                <button class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-secondary bg-surface border border-zinc-700/50 transition-colors hover:text-title hover:border-zinc-500 cursor-pointer shadow-sm" (click)="fileInput.click()">
+                    <i class="pi pi-upload"></i>
+                    Importar Extrato
+                </button>
+
+                <button class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-white bg-brand transition-colors hover:bg-brand-dark cursor-pointer shadow-md" (click)="showModal()">
+                    <i class="pi pi-plus"></i>
+                    Nova Transação
+                </button>
+            </div>
         </div>
 
-        <div class="shrink-0 flex justify-between items-center mb-4">
-            <div class="relative w-72">
+        <div class="shrink-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <div class="relative w-full sm:w-72">
                 <i class="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-secondary"></i>
                 <input pInputText type="text" placeholder="Buscar descrição..."
-                    class="w-full pl-10 bg-background border border-zinc-400/20 text-text placeholder:text-secondary rounded-lg" />
+                    class="w-full pl-3 pr-10 py-2 bg-background border border-zinc-400/20 text-text placeholder:text-secondary rounded-lg"
+                    (input)="dt.filterGlobal($any($event.target).value, 'contains')" />
             </div>
-            <button class="p-2 text-secondary hover:text-title transition-colors border border-zinc-400/20 rounded-lg">
-                <i class="pi pi-filter"></i>
-            </button>
+
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+                <p-select 
+                    [options]="periodOptions" 
+                    [(ngModel)]="selectedPeriod" 
+                    (onChange)="onPeriodChange()"
+                    optionLabel="label" 
+                    optionValue="value"
+                    styleClass="w-full sm:w-48 bg-surface border-zinc-700/50" />
+
+                <p-datepicker 
+                    *ngIf="selectedPeriod === 'custom'"
+                    [(ngModel)]="customDateRange" 
+                    selectionMode="range" 
+                    [readonlyInput]="true"
+                    dateFormat="dd/mm/yy"
+                    placeholder="Selecione o período"
+                    [showIcon]="true"
+                    (onSelect)="onCustomDateChange()"
+                    styleClass="w-full sm:w-68 bg-surface border-zinc-700/50 animate-slideUp" />
+            </div>
         </div>
 
         <div class="flex-1 min-h-0 flex flex-col">
-            <p-table [value]="transactionsList" [rows]="10" [paginator]="true" [scrollable]="true" scrollHeight="flex"
+            <p-table #dt [value]="transactionsList" [rows]="10" [paginator]="true" [scrollable]="true" scrollHeight="flex"
+                [globalFilterFields]="['description', 'category', 'account']"
                 class="h-full flex flex-col">
 
                 <ng-template pTemplate="header">

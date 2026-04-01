@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms'; // FormsModule adicionado aqui
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -13,7 +13,7 @@ import { DialogModule } from 'primeng/dialog';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { TransactionService } from '../../core/services/transaction-service';
-import { GroupService } from '../../core/services/group-service'; // <-- 1. Importamos o serviço de Grupos
+import { GroupService } from '../../core/services/group-service';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -24,6 +24,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   imports: [
     CommonModule, 
     ReactiveFormsModule, 
+    FormsModule, // E adicionado aqui também!
     TableModule, 
     ButtonModule, 
     InputTextModule, 
@@ -45,7 +46,7 @@ export class Transactions implements OnInit {
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private transactionService = inject(TransactionService);
-  private groupService = inject(GroupService); // <-- 2. Injetamos o serviço
+  private groupService = inject(GroupService);
   private confirmationService = inject(ConfirmationService);
 
   // Controle do Modal
@@ -70,9 +71,24 @@ export class Transactions implements OnInit {
     { label: 'Dinheiro', value: 'Dinheiro' }
   ];
 
-  groups: { label: string, value: string }[] = []; // <-- 3. Agora começa vazio e recebe o tipo correto
+  groups: { label: string, value: string }[] = [];
 
+  // NOVAS VARIÁVEIS PARA O FILTRO E IMPORTAÇÃO
+  allTransactions: any[] = [];
   transactionsList: any[] = [];
+  
+  periodOptions = [
+    { label: 'Este Mês', value: 'thisMonth' },
+    { label: 'Último Mês', value: 'lastMonth' },
+    { label: 'Últimos 30 dias', value: 'last30days' },
+    { label: 'Este Ano', value: 'thisYear' },
+    { label: 'Todo o Período', value: 'all' },
+    { label: 'Personalizado...', value: 'custom' }
+  ];
+  
+  selectedPeriod: string = 'thisMonth';
+  customDateRange: Date[] = [];
+
   menuItems: MenuItem[] = [];
   selectedTransaction: any = null;
   editingId: number | null = null;
@@ -92,7 +108,7 @@ export class Transactions implements OnInit {
 
   ngOnInit() {
     this.loadTransactions();
-    this.loadGroups(); // <-- 4. Chama a busca de grupos ao abrir a tela
+    this.loadGroups();
 
     this.menuItems = [
       { label: 'Editar', icon: 'pi pi-pencil', command: () => this.editTransaction(this.selectedTransaction) },
@@ -100,12 +116,12 @@ export class Transactions implements OnInit {
     ];
   }
 
-  // --- BUSCA DE DADOS ---
+  // --- BUSCA DE DADOS E FILTROS ---
 
   loadTransactions() {
     this.transactionService.getAll().subscribe({
       next: (data) => {
-        this.transactionsList = data.map(t => {
+        this.allTransactions = data.map(t => {
           const dateParts = t.date.split('-');
           const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : t.date;
 
@@ -117,9 +133,13 @@ export class Transactions implements OnInit {
             account: t.account,
             group: t.groupName, 
             type: t.type,
-            amount: t.amount
+            amount: t.amount,
+            rawDate: new Date(t.date + 'T00:00:00') // Salva a data real para facilitar o filtro
           };
         });
+        
+        // Aplica o filtro de período assim que carrega
+        this.applyFilter();
       },
       error: (err) => {
         console.error('Erro ao buscar transações', err);
@@ -128,17 +148,88 @@ export class Transactions implements OnInit {
     });
   }
 
+  onPeriodChange() {
+    if (this.selectedPeriod !== 'custom') {
+      this.applyFilter();
+    }
+  }
+
+  onCustomDateChange() {
+    if (this.customDateRange && this.customDateRange.length === 2 && this.customDateRange[1]) {
+      this.applyFilter();
+    }
+  }
+
+  applyFilter() {
+    let filtered = this.allTransactions;
+    const now = new Date();
+    let startDate: Date | null = null;
+    let endDate: Date | null = new Date();
+
+    switch (this.selectedPeriod) {
+      case 'thisMonth':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case 'lastMonth':
+        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+        break;
+      case 'last30days':
+        startDate = new Date();
+        startDate.setDate(startDate.getDate() - 30);
+        break;
+      case 'thisYear':
+        startDate = new Date(now.getFullYear(), 0, 1);
+        break;
+      case 'custom':
+        if (this.customDateRange && this.customDateRange.length === 2 && this.customDateRange[1]) {
+          startDate = this.customDateRange[0];
+          endDate = this.customDateRange[1];
+          endDate.setHours(23, 59, 59, 999);
+        } else {
+          return;
+        }
+        break;
+      case 'all':
+      default:
+        startDate = null;
+        endDate = null;
+        break;
+    }
+
+    if (startDate && endDate) {
+      filtered = this.allTransactions.filter(t => t.rawDate >= startDate! && t.rawDate <= endDate!);
+    }
+
+    // Atualiza a tabela com a lista filtrada
+    this.transactionsList = [...filtered];
+  }
+
   loadGroups() {
     this.groupService.getAll().subscribe({
       next: (data) => {
-        // Mapeia os grupos do banco (que tem id, name, description) para o formato do Dropdown (label, value)
         this.groups = data.map(g => ({
           label: g.name,
-          value: g.name // Salvamos o nome pois a sua entidade Transaction no Java espera uma String 'groupName'
+          value: g.name
         }));
       },
       error: (err) => console.error('Erro ao carregar grupos', err)
     });
+  }
+
+  // --- IMPORTAÇÃO DE EXTRATO ---
+
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    
+    if (file) {
+      this.messageService.add({ severity: 'info', summary: 'Processando Extrato', detail: `Lendo arquivo ${file.name}...` });
+      
+      // O fluxo de envio para o Backend entrará aqui usando FormData futuramente.
+      
+      // Limpa o input para permitir selecionar o mesmo arquivo novamente
+      event.target.value = '';
+    }
   }
 
   // --- MÉTODOS DE AÇÃO NA TABELA ---
@@ -219,7 +310,6 @@ export class Transactions implements OnInit {
         date: formattedDate,
         category: formValues.category,
         account: formValues.account,
-        // Se ativou o toggle, manda o grupo escolhido. Se não, salva como 'Pessoal'
         groupName: (formValues.isShared && formValues.sharedGroups) ? formValues.sharedGroups : 'Pessoal',
         type: formValues.type
       };
