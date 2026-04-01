@@ -35,4 +35,8 @@ public class Transaction {
     private String groupName;
 
     private String type; // INCOME ou EXPENSE
+
+    public String getPaidByName() {
+        return this.user != null ? this.user.getName() : "Desconhecido";
+    }
 }

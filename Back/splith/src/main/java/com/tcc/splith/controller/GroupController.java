@@ -27,6 +27,12 @@ public class GroupController {
     // Record para receber os dados do Angular
     public record GroupRequest(String name, String description) {}
 
+    @GetMapping("/{id}")
+    public ResponseEntity<Group> getGroupById(@PathVariable Long id) {
+        Group group = groupRepository.findById(id).orElseThrow();
+        return ResponseEntity.ok(group);
+    }
+
     @PostMapping
     public ResponseEntity<Group> createGroup(@RequestBody GroupRequest request) {
         // 1. Descobre quem é o usuário logado
@@ -55,5 +61,27 @@ public class GroupController {
         // Busca apenas os grupos onde esse usuário está na lista de membros
         List<Group> groups = groupRepository.findByMembersContaining(user);
         return ResponseEntity.ok(groups);
+    }
+
+
+    public record AddMemberRequest(String email) {}
+
+    @PostMapping("/{groupId}/members")
+    public ResponseEntity<Group> addMemberToGroup(@PathVariable Long groupId, @RequestBody AddMemberRequest request) {
+        // 1. Encontra o grupo pelo ID
+        Group group = groupRepository.findById(groupId).orElseThrow();
+
+        // 2. Busca o usuário pelo email fornecido
+        User userToAdd = (User) userRepository.findUserByEmail(request.email())
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Usuário não encontrado com este email"));
+
+        // 3. Adiciona o usuário na lista de membros do grupo
+        group.getMembers().add(userToAdd);
+
+        // 4. Salva no banco de dados
+        Group savedGroup = groupRepository.save(group);
+
+        return ResponseEntity.ok(savedGroup);
     }
 }

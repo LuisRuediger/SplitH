@@ -31,6 +31,12 @@ public class TransactionController {
                                      String account, String groupName, String type) {
     }
 
+    @GetMapping("/group/{groupName}")
+    public ResponseEntity<List<Transaction>> getGroupTransactions(@PathVariable String groupName) {
+        List<Transaction> transactions = transactionRepository.findByGroupNameOrderByIdDesc(groupName);
+        return ResponseEntity.ok(transactions);
+    }
+
     @PostMapping
     public ResponseEntity<Transaction> createTransaction(@RequestBody TransactionRequest request) {
         // Pega os dados do usuário logado via Token JWT

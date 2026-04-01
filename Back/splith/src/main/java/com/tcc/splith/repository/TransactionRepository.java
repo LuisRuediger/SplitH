@@ -10,4 +10,7 @@ import java.util.List;
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     // O Spring cria o SQL sozinho só de ler esse nome!
     List<Transaction> findByUserOrderByIdDesc(User user);
+
+    // Busca todas as transações de um grupo específico, ordenadas da mais nova pra mais velha
+    List<Transaction> findByGroupNameOrderByIdDesc(String groupName);
 }
