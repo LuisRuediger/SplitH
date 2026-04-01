@@ -1,14 +1,16 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router'; // Para ler o ID na URL
+import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ChartModule } from 'primeng/chart';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
 
-// Nossos serviços reais
 import { GroupService } from '../../core/services/group-service';
 import { TransactionService } from '../../core/services/transaction-service';
 import { AuthService } from '../../core/services/auth-service';
@@ -41,22 +43,26 @@ export interface Transaction {
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     ToastModule,
     ChartModule,
     SelectModule,
-    TableModule
+    TableModule,
+    DialogModule,
+    InputTextModule,
+    ButtonModule
   ],
   providers: [MessageService],
   templateUrl: './grupo-dashboard.html',
   styleUrl: './grupo-dashboard.css',
 })
 export class GrupoDashboardComponent implements OnInit {
-  // Injeção de dependências
   private route = inject(ActivatedRoute);
   private groupService = inject(GroupService);
   private transactionService = inject(TransactionService);
   private authService = inject(AuthService);
   private messageService = inject(MessageService);
+  private fb = inject(FormBuilder);
 
   chartData: any;
   chartOptions: any;
@@ -68,14 +74,13 @@ export class GrupoDashboardComponent implements OnInit {
   selectedPeriod = 'month';
   globalFilter = '';
 
-  // Variáveis para guardar os dados reais do banco
   currentGroup: any = null;
   currentUserEmail: string = '';
 
   resume = {
     groupTotal: 0,
     userShare: 0,
-    variationPercentage: 0, // Mockado por enquanto (exigiria lógica complexa de meses anteriores)
+    variationPercentage: 0,
     activeMembersCount: 1,
     monthlyTransactions: 0,
   };
@@ -83,11 +88,21 @@ export class GrupoDashboardComponent implements OnInit {
   members: Member[] = [];
   transactions: Transaction[] = [];
 
+  // --- CONTROLE DO MODAL DE MEMBRO ---
+  displayAddMemberModal = false;
+  isAddingMember = false;
+  memberForm: FormGroup;
+
+  constructor() {
+    this.memberForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]]
+    });
+  }
+
   ngOnInit(): void {
-    this.initChart(null); // Inicia o gráfico vazio
+    this.initChart(null);
     this.extractCurrentUser();
 
-    // Fica "escutando" a URL. Se o ID do grupo mudar, ele recarrega a tela toda!
     this.route.queryParams.subscribe(params => {
       const groupId = params['id'];
       if (groupId) {
@@ -96,13 +111,12 @@ export class GrupoDashboardComponent implements OnInit {
     });
   }
 
-  // Descobre quem é o usuário logado lendo o Token JWT
   extractCurrentUser() {
     const token = this.authService.token;
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        this.currentUserEmail = payload.sub; // No nosso Java, o 'sub' guarda o email
+        this.currentUserEmail = payload.sub;
       } catch (e) {
         console.error('Erro ao ler token JWT', e);
       }
@@ -114,8 +128,6 @@ export class GrupoDashboardComponent implements OnInit {
       next: (group) => {
         this.currentGroup = group;
         this.resume.activeMembersCount = group.members ? group.members.length : 1;
-        
-        // Agora que temos o nome do grupo, buscamos as transações dele
         this.loadTransactions(group.name, group.members);
       },
       error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar o grupo.' })
@@ -125,15 +137,15 @@ export class GrupoDashboardComponent implements OnInit {
   loadTransactions(groupName: string, groupMembers: any[]) {
     this.transactionService.getByGroup(groupName).subscribe({
       next: (data) => {
-        // 1. Filtra só as DESPESAS (EXPENSE) para fazer a divisão
         const expenses = data.filter(t => t.type === 'EXPENSE');
         
-        // 2. Calcula o Total do Grupo
         this.resume.groupTotal = expenses.reduce((acc, t) => acc + t.amount, 0);
         this.resume.monthlyTransactions = data.length;
 
-        // 3. Monta a lista de Membros com a matemática de rateio (Divisão igualitária)
-        const sharePerPerson = this.resume.groupTotal / this.resume.activeMembersCount;
+        const sharePerPerson = this.resume.activeMembersCount > 0 
+            ? this.resume.groupTotal / this.resume.activeMembersCount 
+            : 0;
+            
         this.resume.userShare = sharePerPerson;
 
         this.members = groupMembers.map(m => {
@@ -147,10 +159,8 @@ export class GrupoDashboardComponent implements OnInit {
           };
         });
 
-        // Coloca "Você" no topo da lista
         this.members.sort((a, b) => a.role === 'Você' ? -1 : 1);
 
-        // 4. Monta a lista de Transações para a Tabela
         this.transactions = expenses.map(t => {
           const dateParts = t.date.split('-');
           const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : t.date;
@@ -166,20 +176,60 @@ export class GrupoDashboardComponent implements OnInit {
             paidByInitials: paidByName.charAt(0).toUpperCase(),
             totalAmount: t.amount,
             userShare: t.amount / this.resume.activeMembersCount,
-            status: true // Como MVP, assumimos que as contas lançadas já estão pagas ao fornecedor
+            status: true
           };
         });
 
-        // 5. Atualiza o gráfico com os dados reais
         this.initChart(expenses);
       },
       error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao carregar transações.' })
     });
   }
 
-  // --- LÓGICA DE VISUAL E GRÁFICOS ---
+  // --- FUNÇÕES DO MODAL ---
 
-  // Retorna as cores do Tailwind baseadas na categoria
+  showAddMemberModal() {
+    this.memberForm.reset();
+    this.displayAddMemberModal = true;
+  }
+
+  hideAddMemberModal() {
+    this.displayAddMemberModal = false;
+  }
+
+  onAddMemberSubmit() {
+    if (this.memberForm.valid && this.currentGroup) {
+      this.isAddingMember = true;
+      const email = this.memberForm.value.email;
+
+      this.groupService.addMember(this.currentGroup.id, email).subscribe({
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Membro adicionado!' });
+          this.loadGroupData(this.currentGroup.id); // Mágica: recarrega a tela com a pessoa nova!
+          this.hideAddMemberModal();
+          this.isAddingMember = false;
+        },
+        error: (err) => {
+          this.isAddingMember = false;
+          if (err.status === 404) {
+            this.messageService.add({ severity: 'error', summary: 'Não encontrado', detail: 'Nenhum usuário com este email.' });
+          } else {
+            this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível adicionar o membro.' });
+          }
+        }
+      });
+    } else {
+      this.memberForm.markAllAsTouched();
+    }
+  }
+
+  isInvalidMember(controlName: string) {
+    const control = this.memberForm.get(controlName);
+    return control?.invalid && control?.touched;
+  }
+
+  // --- VISUAL E GRÁFICOS ---
+
   getCategoryStyle(category: string): string {
     const styles: any = {
       'Alimentação': 'bg-amber-500/15 text-amber-400',
@@ -198,7 +248,6 @@ export class GrupoDashboardComponent implements OnInit {
       return;
     }
 
-    // Agrupa os valores por categoria
     const categoryTotals: { [key: string]: number } = {};
     expenses.forEach(t => {
       categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
@@ -240,14 +289,8 @@ export class GrupoDashboardComponent implements OnInit {
     };
   }
 
-  // Getters exigidos pelo HTML do Luis para manter os cards funcionando
-  get totalAmount(): number {
-    return this.resume.groupTotal;
-  }
-
-  get totalUserShare(): number {
-    return this.resume.userShare;
-  }
+  get totalAmount(): number { return this.resume.groupTotal; }
+  get totalUserShare(): number { return this.resume.userShare; }
 
   formatCurrency(valor: number): string {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

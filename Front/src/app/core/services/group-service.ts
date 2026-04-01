@@ -20,5 +20,9 @@ export class GroupService {
   getById(id: number): Observable<any> {
     return this.http.get<any>(`${this.api}/${id}`);
   }
+
+  addMember(groupId: number, email: string): Observable<any> {
+    return this.http.post(`${this.api}/${groupId}/members`, { email });
+  }
   
 }

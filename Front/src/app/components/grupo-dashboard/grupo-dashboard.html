@@ -48,6 +48,10 @@
     <div class="bg-surface border border-zinc-700/30 rounded-2xl overflow-hidden">
       <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-700/30">
         <h2 class="text-title text-sm font-semibold">Divisão por Pessoa</h2>
+        
+        <button (click)="showAddMemberModal()" class="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-brand/10 text-brand rounded-lg hover:bg-brand/20 transition-colors cursor-pointer">
+          <i class="pi pi-user-plus"></i> Adicionar
+        </button>
       </div>
 
       <div class="divide-y divide-zinc-700/30">
@@ -126,37 +130,37 @@
     >
       <ng-template pTemplate="header">
         <tr>
-          <th pSortableColumn="date" class="bg-input/20! text-secondary! !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 130px">
+          <th pSortableColumn="date" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 130px">
             <div class="flex items-center gap-1">
               Data <p-sortIcon field="date" />
             </div>
           </th>
-          <th pSortableColumn="description" class="bg-input/20! text-secondary! text-xs! font-semibold! uppercase! tracking-wider! border-b! border-zinc-700/30!">
+          <th pSortableColumn="description" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30">
             <div class="flex items-center gap-1">
               Descrição <p-sortIcon field="description" />
             </div>
           </th>
-          <th pSortableColumn="category" class="bg-input/20! text-secondary! !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 130px">
+          <th pSortableColumn="category" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 130px">
             <div class="flex items-center gap-1">
               Categoria <p-sortIcon field="category" />
             </div>
           </th>
-          <th pSortableColumn="paidBy" class="bg-input/20! text-secondary! !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 160px">
+          <th pSortableColumn="paidBy" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 160px">
             <div class="flex items-center gap-1">
               Pago Por <p-sortIcon field="paidBy" />
             </div>
           </th>
-          <th pSortableColumn="totalAmount" class="bg-input/20! text-secondary! !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 120px">
+          <th pSortableColumn="totalAmount" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 120px">
             <div class="flex items-center justify-end gap-1">
               Valor Total <p-sortIcon field="totalAmount" />
             </div>
           </th>
-          <th pSortableColumn="userShare" class="bg-input/20! text-secondary! !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 110px">
+          <th pSortableColumn="userShare" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 110px">
             <div class="flex items-center justify-end gap-1">
               Sua Parte <p-sortIcon field="userShare" />
             </div>
           </th>
-          <th pSortableColumn="status" class="bg-input/20! text-secondary! !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 90px">
+          <th pSortableColumn="status" class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30" style="width: 90px">
             <div class="flex items-center justify-end gap-1">
               Status <p-sortIcon field="status" />
             </div>
@@ -167,7 +171,7 @@
       <ng-template pTemplate="body" let-transaction>
         <tr class="hover:!bg-zinc-700/15 transition-colors cursor-pointer border-b border-zinc-700/20">
 
-          <td class="text-secondary! !text-sm !border-0">
+          <td class="!text-secondary !text-sm !border-0">
             {{ transaction.date }}
           </td>
 
@@ -222,3 +226,30 @@
   </div>
 
 </div>
+
+<p-dialog [(visible)]="displayAddMemberModal" [modal]="true" [draggable]="false" [resizable]="false" header="Adicionar Membro"
+    styleClass="w-full max-w-[400px] bg-surface border border-zinc-700/50 shadow-2xl rounded-2xl">
+
+    <form [formGroup]="memberForm" (ngSubmit)="onAddMemberSubmit()" class="mt-4 flex flex-col gap-5">
+        
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Email do Usuário</label>
+            <input pInputText formControlName="email" type="email" placeholder="Ex: luis@email.com"
+                class="w-full bg-input border border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand"
+                [ngClass]="{'border-expense': isInvalidMember('email')}" />
+            <small *ngIf="isInvalidMember('email')" class="text-expense text-xs mt-1 block">Digite um email válido.</small>
+        </div>
+
+        <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-700/30">
+            <button type="button" (click)="hideAddMemberModal()"
+                class="px-5 py-2.5 rounded-lg text-sm font-medium text-text bg-transparent hover:bg-zinc-700/30 transition-colors cursor-pointer">
+                Cancelar
+            </button>
+            <button type="submit" [disabled]="isAddingMember"
+                class="px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-brand hover:bg-brand-dark transition-colors cursor-pointer shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="pi pi-spin pi-spinner mr-2" *ngIf="isAddingMember"></i>
+                {{ isAddingMember ? 'Adicionando...' : 'Adicionar' }}
+            </button>
+        </div>
+    </form>
+</p-dialog>

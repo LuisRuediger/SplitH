@@ -1,37 +1,80 @@
-<div class="card">
-    <p-toolbar [style]="{ 
-                'background-color': 'var(--color-brand-dark)', 
-                'border': 'none', 
-                'border-bottom': '3px solid var(--color-brand)', 
-                'border-radius': '0', 
-                'box-shadow': 'none'
-                }">
+<p-toast position="top-right" />
 
-        <ng-template #start>
-            <div class="flex items-center gap-2">
+<header class="h-[72px] bg-surface border-b border-zinc-700/30 flex items-center justify-between px-8 shrink-0 z-20">
+    
+    <div class="flex items-center gap-3">
+        <img src="/images/logo.jpg" alt="Logo" class="h-8 w-auto rounded-md object-contain" 
+             onerror="this.style.display='none'"> <span class="text-xl font-bold bg-linear-to-r from-brand to-emerald-400 bg-clip-text text-transparent">
+            SplitH
+        </span>
+    </div>
 
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--color-text)" class="size-6">
-                    <path d="M2.273 5.625A4.483 4.483 0 0 1 5.25 4.5h13.5c1.141 0 2.183.425 2.977 1.125A3 3 0 0 0 
-                        18.75 3H5.25a3 3 0 0 0-2.977 2.625ZM2.273 8.625A4.483 4.483 0 0 1 5.25 7.5h13.5c1.141 
-                        0 2.183.425 2.977 1.125A3 3 0 0 0 18.75 6H5.25a3 3 0 0 0-2.977 2.625ZM5.25 9a3 3 0 0 
-                        0-3 3v6a3 3 0 0 0 3 3h13.5a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3H15a.75.75 0 0 0-.75.75 2.25 
-                        2.25 0 0 1-4.5 0A.75.75 0 0 0 9 9H5.25Z" />
-                </svg>
+    <div class="flex items-center gap-5">
+        
+        <button class="relative p-2 text-secondary hover:text-title hover:bg-zinc-700/30 rounded-full transition-all cursor-pointer">
+            <i class="pi pi-bell text-lg"></i>
+            <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-brand rounded-full border-2 border-surface"></span>
+        </button>
 
-                <button
-                    class=" p-1 hover:bg-brand hover:rounded-2xl focus:outline-3 focus:outline-offset-3 focus:outline-brand active:bg-brand-dark rounded-3xl font-bold text-title">
-                    Save changes
-                </button>
+        <div class="h-8 w-px bg-zinc-700/50"></div>
 
+        <button class="flex items-center gap-3 hover:bg-zinc-700/20 p-1.5 pr-3 rounded-full transition-all cursor-pointer" 
+                (click)="menu.toggle($event)">
+            
+            <div class="w-9 h-9 rounded-full bg-linear-to-br from-brand-dark to-brand flex items-center justify-center shadow-md">
+                <span class="text-white text-sm font-bold">{{ iniciais }}</span>
             </div>
-
-        </ng-template>
-        <ng-template #end>
-            <div class="flex items-center gap-2">
-                <p-button label="Share" severity="contrast" size="small" />
-                <p-avatar image="https://primefaces.org/cdn/primeng/images/demo/avatar/amyelsner.png"
-                    [style]="{ width: '32px', height: '32px' }" />
+            
+            <div class="flex flex-col items-start hidden sm:flex">
+                <span class="text-sm font-semibold text-title leading-tight">{{ nomeUsuario }}</span>
+                <span class="text-[10px] text-secondary">Minha Conta</span>
             </div>
-        </ng-template>
-    </p-toolbar>
-</div>
+            
+            <i class="pi pi-chevron-down text-xs text-secondary ml-1 hidden sm:block"></i>
+        </button>
+
+        <p-menu #menu [model]="userMenuItems" [popup]="true" appendTo="body" styleClass="w-56 mt-2 bg-surface border border-zinc-700/50 shadow-2xl rounded-xl"></p-menu>
+    </div>
+</header>
+
+<p-dialog [(visible)]="displayProfileModal" [modal]="true" [draggable]="false" [resizable]="false" header="Meu Perfil"
+    styleClass="w-full max-w-[400px] bg-surface border border-zinc-700/50 shadow-2xl rounded-2xl">
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSaveProfile()" class="mt-4 flex flex-col gap-5">
+        
+        <div class="flex justify-center mb-2">
+            <div class="relative group cursor-pointer">
+                <div class="w-20 h-20 rounded-full bg-linear-to-br from-brand-dark to-brand flex items-center justify-center shadow-lg transition-transform group-hover:scale-105">
+                    <span class="text-white text-3xl font-bold">{{ iniciais }}</span>
+                </div>
+                <div class="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="pi pi-camera text-white"></i>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Nome de Exibição</label>
+            <input pInputText formControlName="name" placeholder="Seu nome"
+                class="w-full bg-input border border-zinc-700/50 text-text rounded-lg focus:border-brand" />
+        </div>
+
+        <div>
+            <label class="block text-xs text-secondary font-medium mb-2">Telefone</label>
+            <input pInputText formControlName="phone" placeholder="(00) 00000-0000"
+                class="w-full bg-input border border-zinc-700/50 text-text rounded-lg focus:border-brand" />
+        </div>
+
+        <div class="flex justify-end gap-3 mt-4 pt-4 border-t border-zinc-700/30">
+            <button type="button" (click)="hideProfileModal()"
+                class="px-5 py-2.5 rounded-lg text-sm font-medium text-text bg-transparent hover:bg-zinc-700/30 transition-colors cursor-pointer">
+                Cancelar
+            </button>
+            <button type="submit" [disabled]="isSaving"
+                class="px-5 py-2.5 rounded-lg text-sm font-medium text-white bg-brand hover:bg-brand-dark transition-colors cursor-pointer shadow-md">
+                <i class="pi pi-spin pi-spinner mr-2" *ngIf="isSaving"></i>
+                {{ isSaving ? 'Salvando...' : 'Salvar Alterações' }}
+            </button>
+        </div>
+    </form>
+</p-dialog>
