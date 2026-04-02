@@ -223,11 +223,43 @@ export class Transactions implements OnInit {
     const file: File = event.target.files[0];
     
     if (file) {
+      // 1. Array com as extensões permitidas
+      const allowedExtensions = ['.csv', '.xls', '.xlsx', '.ofx'];
+      const fileName = file.name.toLowerCase();
+      
+      // 2. Verifica se o nome do arquivo termina com alguma das extensões permitidas
+      const isValid = allowedExtensions.some(ext => fileName.endsWith(ext));
+
+      if (!isValid) {
+        this.messageService.add({ 
+          severity: 'warn', 
+          summary: 'Arquivo não suportado', 
+          detail: 'Por favor, selecione apenas arquivos .CSV, .XLS, .XLSX ou .OFX.' 
+        });
+        event.target.value = ''; // Limpa o input
+        return; // Para a execução aqui se for inválido
+      }
+
+      // 3. Se passou na validação, avisa o usuário e prepara o envio
       this.messageService.add({ severity: 'info', summary: 'Processando Extrato', detail: `Lendo arquivo ${file.name}...` });
       
-      // O fluxo de envio para o Backend entrará aqui usando FormData futuramente.
+      // 4. Monta o pacote de dados (FormData) para enviar ao Java
+      const formData = new FormData();
+      formData.append('file', file);
       
-      // Limpa o input para permitir selecionar o mesmo arquivo novamente
+      // 5. Envia para o Backend usando o serviço
+      this.transactionService.uploadStatement(formData).subscribe({
+        next: () => {
+          this.messageService.add({ severity: 'success', summary: 'Importação Concluída', detail: 'As transações foram adicionadas.' });
+          this.loadTransactions(); // Recarrega a tabela para mostrar as novas contas
+        },
+        error: (err) => {
+          console.error('Erro no upload', err);
+          this.messageService.add({ severity: 'error', summary: 'Erro na Importação', detail: 'Falha ao processar o arquivo.' });
+        }
+      });
+
+      // 6. Limpa o input para permitir selecionar o mesmo arquivo novamente, se necessário
       event.target.value = '';
     }
   }

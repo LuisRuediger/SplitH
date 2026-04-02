@@ -14,16 +14,23 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.tcc.splith.service.StatementImportService;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/transactions")
 public class TransactionController {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
+    private final StatementImportService importService;
 
-    public TransactionController(TransactionRepository transactionRepository, UserRepository userRepository) {
+
+    public TransactionController(TransactionRepository transactionRepository, UserRepository userRepository, StatementImportService importService) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
+        this.importService = importService;
     }
 
     // Criamos um Record interno para receber os dados do Angular
@@ -113,4 +120,22 @@ public class TransactionController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping("/upload")
+    public ResponseEntity<Map<String, String>> uploadStatement(@RequestParam("file") MultipartFile file) {
+        JWTUserData loggedUser = (JWTUserData) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findById(loggedUser.userId()).orElseThrow();
+
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Arquivo vazio."));
+        }
+
+        try {
+            // Manda o arquivo para o nosso serviço processar
+            importService.processFile(file, user);
+            return ResponseEntity.ok(Map.of("message", "Importação realizada com sucesso!"));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("message", "Erro: " + e.getMessage()));
+        }
+    }
 }
+

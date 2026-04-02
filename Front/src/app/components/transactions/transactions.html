@@ -13,8 +13,7 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <input type="file" #fileInput accept=".csv,.ofx" style="display: none;" (change)="onFileSelected($event)">
-                <button class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-secondary bg-surface border border-zinc-700/50 transition-colors hover:text-title hover:border-zinc-500 cursor-pointer shadow-sm" (click)="fileInput.click()">
+<input type="file" #fileInput accept=".csv, .xls, .xlsx, .ofx" style="display: none;" (change)="onFileSelected($event)">                <button class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-secondary bg-surface border border-zinc-700/50 transition-colors hover:text-title hover:border-zinc-500 cursor-pointer shadow-sm" (click)="fileInput.click()">
                     <i class="pi pi-upload"></i>
                     Importar Extrato
                 </button>
