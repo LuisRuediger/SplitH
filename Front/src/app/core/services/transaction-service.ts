@@ -28,5 +28,9 @@ export class TransactionService {
   getByGroup(groupName: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.api}/group/${groupName}`);
   }
-  
+
+  // Novo método para enviar o arquivo de extrato para o Java
+  uploadStatement(formData: FormData): Observable<any> {
+    return this.http.post(`${this.api}/upload`, formData);
+  }
 }
