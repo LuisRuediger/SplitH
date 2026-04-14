@@ -5,15 +5,19 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.tcc.splith.entity.User;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.Optional;
 
+
+
 @Component
 public class TokenConfig {
 
-    private String secret = "secret";
+    @Value("${jwt.security.secret}")
+    private String secret;
 
     public String generateToken(User user){
 
