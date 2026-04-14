@@ -16,6 +16,8 @@ import java.util.List;
 
 import com.tcc.splith.service.StatementImportService;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.Map;
 
 @RestController
@@ -86,7 +88,7 @@ public class TransactionController {
         User user = userRepository.findById(loggedUser.userId()).orElseThrow();
 
         // Busca a transação e garante que ela existe
-        Transaction t = transactionRepository.findById(id).orElseThrow();
+        Transaction t = transactionRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transação não encontrada"));
 
         // Regra de segurança: O usuário só pode editar as próprias transações!
         if (!t.getUser().getId().equals(user.getId())) {
