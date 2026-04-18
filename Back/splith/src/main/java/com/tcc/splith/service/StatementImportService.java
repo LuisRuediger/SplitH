@@ -1,46 +1,61 @@
 package com.tcc.splith.service;
 
 import com.tcc.splith.dto.statement.ParsedTransactionDTO;
+import com.tcc.splith.entity.Transaction;
+import com.tcc.splith.entity.User;
+import com.tcc.splith.repository.TransactionRepository;
 import com.tcc.splith.service.strategy.StatementProcessorStrategy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class StatementImportService {
 
-    // O Spring Boot é inteligente o suficiente para encontrar TODAS as classes
-    // no projeto que implementam a interface StatementProcessorStrategy
-    // e injetá-las automaticamente dentro desta lista!
     private final List<StatementProcessorStrategy> strategies;
+    private final TransactionRepository transactionRepository;
 
-    // Construtor para injeção de dependência
-    public StatementImportService(List<StatementProcessorStrategy> strategies) {
+    // Injetamos as Estratégias e o Repositório de Transações
+    public StatementImportService(List<StatementProcessorStrategy> strategies, TransactionRepository transactionRepository) {
         this.strategies = strategies;
+        this.transactionRepository = transactionRepository;
     }
 
-    /**
-     * Método principal que será chamado pelo Controller
-     */
-    public void importStatement(MultipartFile file, String bankCode) {
+    public void importStatement(MultipartFile file, String bankCode, User user, String groupName) {
 
-        // 1. Procura na lista qual é a classe certa para esse banco
+        // 1. Acha o leitor correto (ex: Nubank)
         StatementProcessorStrategy processor = strategies.stream()
                 .filter(strategy -> strategy.supports(bankCode))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Formato de banco não suportado: " + bankCode));
 
-        // 2. Processa o arquivo usando a classe correta que foi encontrada
-        List<ParsedTransactionDTO> transactions = processor.process(file);
+        // 2. Extrai os dados do arquivo para a memória
+        List<ParsedTransactionDTO> dtos = processor.process(file);
 
-        // 3. Imprime no console apenas para termos certeza que funcionou (temporário)
-        System.out.println("Foram encontradas " + transactions.size() + " transações no arquivo!");
-        for (ParsedTransactionDTO t : transactions) {
-            System.out.println(t.getDate() + " | " + t.getDescription() + " | R$ " + t.getAmount());
-        }
+        // 3. Mapeia os DTOs temporários para Entidades reais do banco
+        List<Transaction> transactionsToSave = dtos.stream().map(dto -> {
+            Transaction novaDespesa = new Transaction();
+            novaDespesa.setDate(dto.getDate());
+            novaDespesa.setDescription(dto.getDescription());
+            novaDespesa.setAmount(dto.getAmount());
 
-        // 4. (Próximos passos) A partir daqui, você mapeará os DTOs para a sua Entidade 'Transaction'
-        // e salvará no banco de dados usando o seu 'TransactionRepository'.
+            // Adicionando o Contexto
+            novaDespesa.setUser(user);
+            novaDespesa.setGroupName(groupName);
+
+            // Valores padrão para importação
+            novaDespesa.setAccount("Nubank");
+            novaDespesa.setCategory("Importado");
+            novaDespesa.setType("DESPESA");
+
+            return novaDespesa;
+        }).collect(Collectors.toList());
+
+        // 4. Salva tudo de uma vez no PostgreSQL!
+        transactionRepository.saveAll(transactionsToSave);
+
+        System.out.println(transactionsToSave.size() + " transações foram salvas no banco com sucesso!");
     }
 }

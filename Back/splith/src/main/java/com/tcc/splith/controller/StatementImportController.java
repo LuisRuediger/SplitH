@@ -1,7 +1,11 @@
 package com.tcc.splith.controller;
 
+import com.tcc.splith.config.JWTUserData;
+import com.tcc.splith.entity.User;
+import com.tcc.splith.repository.UserRepository;
 import com.tcc.splith.service.StatementImportService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,33 +14,33 @@ import org.springframework.web.multipart.MultipartFile;
 public class StatementImportController {
 
     private final StatementImportService importService;
+    private final UserRepository userRepository;
 
-    // Injetando o nosso Maestro
-    public StatementImportController(StatementImportService importService) {
+    // Injetando o Maestro e o Repositório de Usuários
+    public StatementImportController(StatementImportService importService, UserRepository userRepository) {
         this.importService = importService;
+        this.userRepository = userRepository;
     }
 
-    /**
-     * Endpoint para receber o upload do arquivo de extrato.
-     * Rota completa: POST http://localhost:8080/api/statement/import
-     */
     @PostMapping("/import")
     public ResponseEntity<String> importFile(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("bankCode") String bankCode) {
+            @RequestParam("bankCode") String bankCode,
+            @RequestParam("groupName") String groupName) { // <- Novo parâmetro!
 
         try {
-            // Repassa a bola para o Maestro cuidar de tudo
-            importService.importStatement(file, bankCode);
+            // 1. Descobre quem é o usuário logado através do Token JWT
+            JWTUserData loggedUser = (JWTUserData) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            User user = userRepository.findById(loggedUser.userId()).orElseThrow();
 
-            return ResponseEntity.ok("Arquivo lido e processado com sucesso! Verifique o console do Spring.");
+            // 2. Repassa a bola para o Maestro cuidar de tudo, agora passando o usuário e o grupo
+            importService.importStatement(file, bankCode, user, groupName);
+
+            return ResponseEntity.ok("Arquivo lido e transações salvas com sucesso no banco de dados!");
 
         } catch (IllegalArgumentException e) {
-            // Se o usuário mandar um banco que não existe (Ex: "SANTANDER")
             return ResponseEntity.badRequest().body("Erro de validação: " + e.getMessage());
-
         } catch (Exception e) {
-            // Se o arquivo estiver corrompido ou der erro na leitura
             return ResponseEntity.internalServerError().body("Erro interno ao processar o arquivo: " + e.getMessage());
         }
     }
