@@ -1,81 +1,46 @@
 package com.tcc.splith.service;
 
-import com.tcc.splith.entity.Transaction;
-import com.tcc.splith.entity.User;
-import com.tcc.splith.repository.TransactionRepository;
+import com.tcc.splith.dto.statement.ParsedTransactionDTO;
+import com.tcc.splith.service.strategy.StatementProcessorStrategy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class StatementImportService {
 
-    private final TransactionRepository transactionRepository;
+    // O Spring Boot é inteligente o suficiente para encontrar TODAS as classes
+    // no projeto que implementam a interface StatementProcessorStrategy
+    // e injetá-las automaticamente dentro desta lista!
+    private final List<StatementProcessorStrategy> strategies;
 
-    public StatementImportService(TransactionRepository transactionRepository) {
-        this.transactionRepository = transactionRepository;
+    // Construtor para injeção de dependência
+    public StatementImportService(List<StatementProcessorStrategy> strategies) {
+        this.strategies = strategies;
     }
 
-    public void processFile(MultipartFile file, User user) throws Exception {
-        String filename = file.getOriginalFilename();
-        if (filename == null) throw new Exception("Arquivo sem nome.");
+    /**
+     * Método principal que será chamado pelo Controller
+     */
+    public void importStatement(MultipartFile file, String bankCode) {
 
-        filename = filename.toLowerCase();
+        // 1. Procura na lista qual é a classe certa para esse banco
+        StatementProcessorStrategy processor = strategies.stream()
+                .filter(strategy -> strategy.supports(bankCode))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Formato de banco não suportado: " + bankCode));
 
-        if (filename.endsWith(".csv")) {
-            processCsv(file, user);
-        } else if (filename.endsWith(".xls") || filename.endsWith(".xlsx")) {
-            processExcel(file, user);
-        } else if (filename.endsWith(".ofx")) {
-            processOfx(file, user);
-        } else {
-            throw new Exception("Formato de arquivo não suportado pelo servidor.");
+        // 2. Processa o arquivo usando a classe correta que foi encontrada
+        List<ParsedTransactionDTO> transactions = processor.process(file);
+
+        // 3. Imprime no console apenas para termos certeza que funcionou (temporário)
+        System.out.println("Foram encontradas " + transactions.size() + " transações no arquivo!");
+        for (ParsedTransactionDTO t : transactions) {
+            System.out.println(t.getDate() + " | " + t.getDescription() + " | R$ " + t.getAmount());
         }
-    }
 
-    private void processCsv(MultipartFile file, User user) throws Exception {
-        List<Transaction> transactionsToSave = new ArrayList<>();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            String line;
-            reader.readLine(); // Pula o cabeçalho
-
-            while ((line = reader.readLine()) != null) {
-                String[] data = line.split(","); // Supondo separação por vírgula
-
-                if (data.length >= 6) {
-                    Transaction t = new Transaction();
-                    t.setUser(user);
-                    t.setDate(LocalDate.parse(data[0].trim(), formatter));
-                    t.setDescription(data[1].trim());
-                    t.setCategory(data[2].trim());
-                    t.setAccount(data[3].trim());
-                    t.setType(data[4].trim().toUpperCase());
-                    t.setAmount(new BigDecimal(data[5].trim()));
-                    t.setGroupName("Pessoal"); // Por padrão, entra como despesa pessoal
-
-                    transactionsToSave.add(t);
-                }
-            }
-            transactionRepository.saveAll(transactionsToSave);
-        }
-    }
-
-    private void processExcel(MultipartFile file, User user) throws Exception {
-        // TODO: Implementaremos na próxima etapa usando a biblioteca Apache POI
-        throw new Exception("Importação de Excel ainda em desenvolvimento.");
-    }
-
-    private void processOfx(MultipartFile file, User user) throws Exception {
-        // TODO: Implementaremos na próxima etapa usando a biblioteca OFX4J
-        throw new Exception("Importação de OFX ainda em desenvolvimento.");
+        // 4. (Próximos passos) A partir daqui, você mapeará os DTOs para a sua Entidade 'Transaction'
+        // e salvará no banco de dados usando o seu 'TransactionRepository'.
     }
 }
