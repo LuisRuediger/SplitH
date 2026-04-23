@@ -56,7 +56,7 @@ export class TransactionsComponent implements OnInit { // Alterado para Transact
 
   // --- VARIÁVEIS DE UPLOAD (MVP) ---
   selectedFile: File | null = null;
-  selectedBank: string = 'NUBANK'; 
+selectedBank: string = 'NUBANK_CSV';
   groupId: number = 1; 
   isUploading: boolean = false;
 
@@ -234,7 +234,7 @@ export class TransactionsComponent implements OnInit { // Alterado para Transact
     const file: File = event.target.files[0];
     
     if (file) {
-      this.selectedFile = file; // Guarda o ficheiro no estado
+      this.selectedFile = file;
       const allowedExtensions = ['.csv', '.xls', '.xlsx', '.ofx'];
       const fileName = file.name.toLowerCase();
       
@@ -250,18 +250,22 @@ export class TransactionsComponent implements OnInit { // Alterado para Transact
       this.isUploading = true;
       this.messageService.add({ severity: 'info', summary: 'Processando Extrato', detail: `Lendo arquivo ${file.name}...` });
       
-      // Chamada ajustada para o método uploadStatement do service
-      this.transactionService.uploadStatement(this.groupId, this.selectedFile, this.selectedBank).subscribe({
-        next: () => {
+      // Chamada atualizada com a String 'Pessoal' como primeiro parâmetro
+      this.transactionService.uploadStatement('Pessoal', this.selectedFile, this.selectedBank).subscribe({
+        next: (response) => {
           this.messageService.add({ severity: 'success', summary: 'Importação Concluída', detail: 'As transações foram adicionadas.' });
           this.isUploading = false;
           this.selectedFile = null;
           this.loadTransactions(); 
         },
         error: (err) => {
-          console.error('Erro no upload', err);
+          // Alterado para imprimir o erro detalhado que vem do Java
+          console.error('Erro detalhado do Back-end:', err.error);
           this.isUploading = false;
-          this.messageService.add({ severity: 'error', summary: 'Erro na Importação', detail: 'Falha ao processar o arquivo.' });
+          
+          // Tenta exibir a mensagem que veio do Java, senão exibe a genérica
+          const msgErro = typeof err.error === 'string' ? err.error : 'Falha ao processar o arquivo.';
+          this.messageService.add({ severity: 'error', summary: 'Erro na Importação', detail: msgErro });
         }
       });
 

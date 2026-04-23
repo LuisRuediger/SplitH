@@ -30,13 +30,17 @@ export class TransactionService {
   getByGroup(groupName: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/group/${groupName}`);
   }
-
-  uploadStatement(groupId: number, file: File, bankFormat: string): Observable<any> {
+uploadStatement(groupName: string, file: File, bankFormat: string): Observable<any> {
     const formData: FormData = new FormData();
+    // Os nomes aqui ('file', 'bankCode', 'groupName') precisam ser EXATAMENTE
+    // iguais aos que estão no @RequestParam do seu Controller no Java.
     formData.append('file', file);
-    formData.append('bank', bankFormat);
+    formData.append('bankCode', bankFormat);
+    formData.append('groupName', groupName);
 
-    // Aponta para a URL correta do back-end (confirme se o endpoint de import começa com /transactions/import/...)
-    return this.http.post(`${this.apiUrl}/import/group/${groupId}`, formData);
+    // Aponta para a URL correta e aguarda um texto de resposta
+    return this.http.post('http://localhost:8080/api/statement/import', formData, {
+      responseType: 'text'
+    });
   }
 }

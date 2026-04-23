@@ -13,25 +13,21 @@
             </div>
 
             <div class="flex items-center gap-3">
-                <p-select 
-                    [options]="[{label: 'Nubank', value: 'NUBANK'}]" 
-                    [(ngModel)]="selectedBank" 
-                    optionLabel="label" 
-                    optionValue="value"
-                    styleClass="w-32 bg-surface border-zinc-700/50 text-sm" />
+                <p-select [options]="[{label: 'Nubank', value: 'NUBANK_CSV'}]" [(ngModel)]="selectedBank"
+                    optionLabel="label" optionValue="value" styleClass="w-32 bg-surface border-zinc-700/50 text-sm" />
 
-                <input type="file" #fileInput accept=".csv, .xls, .xlsx, .ofx" style="display: none;" (change)="onFileSelected($event)"> 
-                
-                <button 
-                    class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-secondary bg-surface border border-zinc-700/50 transition-colors hover:text-title hover:border-zinc-500 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
-                    (click)="fileInput.click()"
-                    [disabled]="isUploading">
+                <input type="file" #fileInput accept=".csv, .xls, .xlsx, .ofx" style="display: none;"
+                    (change)="onFileSelected($event)">
+
+                <button
+                    class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-secondary bg-surface border border-zinc-700/50 transition-colors hover:text-title hover:border-zinc-500 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    (click)="fileInput.click()" [disabled]="isUploading">
                     <i class="pi" [ngClass]="isUploading ? 'pi-spin pi-spinner' : 'pi-upload'"></i>
                     {{ isUploading ? 'Importando...' : 'Importar Extrato' }}
                 </button>
 
-                <button 
-                    class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-white bg-brand transition-colors hover:bg-brand-dark cursor-pointer shadow-md" 
+                <button
+                    class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-white bg-brand transition-colors hover:bg-brand-dark cursor-pointer shadow-md"
                     (click)="showModal()">
                     <i class="pi pi-plus"></i>
                     Nova Transação
@@ -48,30 +44,20 @@
             </div>
 
             <div class="flex items-center gap-3 w-full sm:w-auto">
-                <p-select 
-                    [options]="periodOptions" 
-                    [(ngModel)]="selectedPeriod" 
-                    (onChange)="onPeriodChange()"
-                    optionLabel="label" 
-                    optionValue="value"
+                <p-select [options]="periodOptions" [(ngModel)]="selectedPeriod" (onChange)="onPeriodChange()"
+                    optionLabel="label" optionValue="value"
                     styleClass="w-full sm:w-48 bg-surface border-zinc-700/50 text-sm" />
 
-                <p-datepicker 
-                    *ngIf="selectedPeriod === 'custom'"
-                    [(ngModel)]="customDateRange" 
-                    selectionMode="range" 
-                    [readonlyInput]="true"
-                    dateFormat="dd/mm/yy"
-                    placeholder="Selecione o período"
-                    [showIcon]="true"
+                <p-datepicker *ngIf="selectedPeriod === 'custom'" [(ngModel)]="customDateRange" selectionMode="range"
+                    [readonlyInput]="true" dateFormat="dd/mm/yy" placeholder="Selecione o período" [showIcon]="true"
                     (onSelect)="onCustomDateChange()"
                     styleClass="w-full sm:w-68 bg-surface border-zinc-700/50 animate-slideUp text-sm" />
             </div>
         </div>
 
         <div class="flex-1 min-h-0 flex flex-col">
-            <p-table #dt [value]="transactionsList" [rows]="10" [paginator]="true" [scrollable]="true" scrollHeight="flex"
-                [globalFilterFields]="['description', 'category', 'account']"
+            <p-table #dt [value]="transactionsList" [rows]="10" [paginator]="true" [scrollable]="true"
+                scrollHeight="flex" [globalFilterFields]="['description', 'category', 'account']"
                 class="h-full flex flex-col">
 
                 <ng-template pTemplate="header">
@@ -89,12 +75,16 @@
                 <ng-template pTemplate="body" let-transaction>
                     <tr class="hover:bg-background/50 transition-colors">
                         <td class="text-text border-b border-zinc-400/10">{{ transaction.date }}</td>
-                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.description }}</td>
-                        <td class="text-title font-medium border-b border-zinc-400/10 hidden md:table-cell">{{ transaction.category }}</td>
-                        <td class="text-title font-medium border-b border-zinc-400/10 hidden sm:table-cell">{{ transaction.account }}</td>
+                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.description }}
+                        </td>
+                        <td class="text-title font-medium border-b border-zinc-400/10 hidden md:table-cell">{{
+                            transaction.category }}</td>
+                        <td class="text-title font-medium border-b border-zinc-400/10 hidden sm:table-cell">{{
+                            transaction.account }}</td>
 
                         <td class="border-b border-zinc-400/10 hidden lg:table-cell">
-                            <span class="text-xs px-2 py-1 bg-background text-secondary rounded-md border border-zinc-400/10">
+                            <span
+                                class="text-xs px-2 py-1 bg-background text-secondary rounded-md border border-zinc-400/10">
                                 {{ transaction.group }}
                             </span>
                         </td>
@@ -104,7 +94,7 @@
                             {{ transaction.type === 'INCOME' ? '+ ' : '- ' }}
                             {{ transaction.amount | currency:'BRL':'symbol':'1.2-2' }}
                         </td>
-                        
+
                         <td class="border-b border-zinc-400/10 text-center">
                             <button type="button"
                                 class="p-2 text-secondary hover:text-title hover:bg-zinc-700/30 rounded-lg transition-colors cursor-pointer"
@@ -128,7 +118,8 @@
     </div>
 </div>
 
-<p-dialog [(visible)]="displayModal" [modal]="true" [draggable]="false" [resizable]="false" [header]="editingId ? 'Editar Transação' : 'Adicionar Transação'"
+<p-dialog [(visible)]="displayModal" [modal]="true" [draggable]="false" [resizable]="false"
+    [header]="editingId ? 'Editar Transação' : 'Adicionar Transação'"
     styleClass="w-full max-w-[480px] bg-surface border border-zinc-700/50 shadow-2xl rounded-2xl">
 
     <form [formGroup]="transactionForm" (ngSubmit)="onSubmit()" class="mt-4 flex flex-col gap-5">
@@ -165,7 +156,8 @@
             <input pInputText formControlName="description" placeholder="Ex: Compra no supermercado"
                 class="w-full bg-input border border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand"
                 [ngClass]="{'border-expense!': isInvalid('description')}" />
-            <small *ngIf="isInvalid('description')" class="text-expense text-xs mt-1 block">A descrição é obrigatória.</small>
+            <small *ngIf="isInvalid('description')" class="text-expense text-xs mt-1 block">A descrição é
+                obrigatória.</small>
         </div>
 
         <div>
@@ -173,7 +165,8 @@
             <p-select formControlName="category" [options]="categories" optionLabel="label" optionValue="value"
                 placeholder="Selecione uma categoria" [editable]="true" styleClass="w-full bg-input border-zinc-700/50"
                 [ngClass]="{'border-expense': isInvalid('category')}" />
-            <small *ngIf="isInvalid('category')" class="text-expense text-xs mt-1 block">A categoria é obrigatória.</small>
+            <small *ngIf="isInvalid('category')" class="text-expense text-xs mt-1 block">A categoria é
+                obrigatória.</small>
         </div>
 
         <div>
@@ -186,8 +179,8 @@
 
         <div>
             <label class="block text-xs text-secondary font-medium mb-2">Data</label>
-            <p-datepicker formControlName="date" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full bg-input border-zinc-700/50"
-                [ngClass]="{'border-expense': isInvalid('date')}" />
+            <p-datepicker formControlName="date" dateFormat="dd/mm/yy" [showIcon]="true"
+                styleClass="w-full bg-input border-zinc-700/50" [ngClass]="{'border-expense': isInvalid('date')}" />
             <small *ngIf="isInvalid('date')" class="text-expense text-xs mt-1 block">A data é obrigatória.</small>
         </div>
 
