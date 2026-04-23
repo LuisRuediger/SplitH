@@ -7,30 +7,36 @@ import { Observable } from 'rxjs';
 })
 export class TransactionService {
   private http = inject(HttpClient);
-  private api = 'http://localhost:8080/transactions'; // A rota no Java
+  
+  // Usamos apenas UMA variável com a URL correta, sem o /api
+  private apiUrl = 'http://localhost:8080/transactions'; 
 
   create(transaction: any): Observable<any> {
-    return this.http.post(this.api, transaction);
+    return this.http.post(this.apiUrl, transaction);
   }
 
   getAll(): Observable<any[]> {
-    return this.http.get<any[]>(this.api);
+    return this.http.get<any[]>(this.apiUrl);
   }
 
   update(id: number, transaction: any): Observable<any> {
-    return this.http.put(`${this.api}/${id}`, transaction);
+    return this.http.put(`${this.apiUrl}/${id}`, transaction);
   }
 
   delete(id: number): Observable<any> {
-    return this.http.delete(`${this.api}/${id}`);
+    return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
   getByGroup(groupName: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.api}/group/${groupName}`);
+    return this.http.get<any[]>(`${this.apiUrl}/group/${groupName}`);
   }
 
-  // Novo método para enviar o arquivo de extrato para o Java
-  uploadStatement(formData: FormData): Observable<any> {
-    return this.http.post(`${this.api}/upload`, formData);
+  uploadStatement(groupId: number, file: File, bankFormat: string): Observable<any> {
+    const formData: FormData = new FormData();
+    formData.append('file', file);
+    formData.append('bank', bankFormat);
+
+    // Aponta para a URL correta do back-end (confirme se o endpoint de import começa com /transactions/import/...)
+    return this.http.post(`${this.apiUrl}/import/group/${groupId}`, formData);
   }
 }

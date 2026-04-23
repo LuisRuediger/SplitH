@@ -6,19 +6,33 @@
 <div class="h-full flex flex-col bg-background">
     <div class="p-6 rounded-lg shadow-sm flex flex-col flex-1 min-h-0">
 
-        <div class="shrink-0 flex justify-between items-center mb-6">
+        <div class="shrink-0 flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
             <div>
                 <h1 class="text-2xl font-bold text-title">Transações</h1>
                 <p class="text-secondary text-sm mt-1">Gerencie as entradas e saídas</p>
             </div>
 
             <div class="flex items-center gap-3">
-<input type="file" #fileInput accept=".csv, .xls, .xlsx, .ofx" style="display: none;" (change)="onFileSelected($event)">                <button class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-secondary bg-surface border border-zinc-700/50 transition-colors hover:text-title hover:border-zinc-500 cursor-pointer shadow-sm" (click)="fileInput.click()">
-                    <i class="pi pi-upload"></i>
-                    Importar Extrato
+                <p-select 
+                    [options]="[{label: 'Nubank', value: 'NUBANK'}]" 
+                    [(ngModel)]="selectedBank" 
+                    optionLabel="label" 
+                    optionValue="value"
+                    styleClass="w-32 bg-surface border-zinc-700/50 text-sm" />
+
+                <input type="file" #fileInput accept=".csv, .xls, .xlsx, .ofx" style="display: none;" (change)="onFileSelected($event)"> 
+                
+                <button 
+                    class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-secondary bg-surface border border-zinc-700/50 transition-colors hover:text-title hover:border-zinc-500 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
+                    (click)="fileInput.click()"
+                    [disabled]="isUploading">
+                    <i class="pi" [ngClass]="isUploading ? 'pi-spin pi-spinner' : 'pi-upload'"></i>
+                    {{ isUploading ? 'Importando...' : 'Importar Extrato' }}
                 </button>
 
-                <button class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-white bg-brand transition-colors hover:bg-brand-dark cursor-pointer shadow-md" (click)="showModal()">
+                <button 
+                    class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-white bg-brand transition-colors hover:bg-brand-dark cursor-pointer shadow-md" 
+                    (click)="showModal()">
                     <i class="pi pi-plus"></i>
                     Nova Transação
                 </button>
@@ -29,7 +43,7 @@
             <div class="relative w-full sm:w-72">
                 <i class="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-secondary"></i>
                 <input pInputText type="text" placeholder="Buscar descrição..."
-                    class="w-full pl-3 pr-10 py-2 bg-background border border-zinc-400/20 text-text placeholder:text-secondary rounded-lg"
+                    class="w-full pl-3 pr-10 py-2 bg-background border border-zinc-400/20 text-text placeholder:text-secondary rounded-lg focus:border-brand focus:ring-1 focus:ring-brand"
                     (input)="dt.filterGlobal($any($event.target).value, 'contains')" />
             </div>
 
@@ -40,7 +54,7 @@
                     (onChange)="onPeriodChange()"
                     optionLabel="label" 
                     optionValue="value"
-                    styleClass="w-full sm:w-48 bg-surface border-zinc-700/50" />
+                    styleClass="w-full sm:w-48 bg-surface border-zinc-700/50 text-sm" />
 
                 <p-datepicker 
                     *ngIf="selectedPeriod === 'custom'"
@@ -51,7 +65,7 @@
                     placeholder="Selecione o período"
                     [showIcon]="true"
                     (onSelect)="onCustomDateChange()"
-                    styleClass="w-full sm:w-68 bg-surface border-zinc-700/50 animate-slideUp" />
+                    styleClass="w-full sm:w-68 bg-surface border-zinc-700/50 animate-slideUp text-sm" />
             </div>
         </div>
 
@@ -64,10 +78,9 @@
                     <tr>
                         <th class="font-medium text-sm">Data</th>
                         <th class="font-medium text-sm">Descrição</th>
-                        <th class="font-medium text-sm">Categoria</th>
-                        <th class="font-medium text-sm">Conta</th>
-                        <th class="font-medium text-sm">Grupo</th>
-                        <th class="font-medium text-sm text-right">Valor</th>
+                        <th class="font-medium text-sm hidden md:table-cell">Categoria</th>
+                        <th class="font-medium text-sm hidden sm:table-cell">Conta</th>
+                        <th class="font-medium text-sm hidden lg:table-cell">Grupo</th>
                         <th class="font-medium text-sm text-right">Valor</th>
                         <th class="w-12"></th>
                     </tr>
@@ -76,14 +89,12 @@
                 <ng-template pTemplate="body" let-transaction>
                     <tr class="hover:bg-background/50 transition-colors">
                         <td class="text-text border-b border-zinc-400/10">{{ transaction.date }}</td>
-                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.description }}
-                        </td>
-                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.category }}</td>
-                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.account }}</td>
+                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.description }}</td>
+                        <td class="text-title font-medium border-b border-zinc-400/10 hidden md:table-cell">{{ transaction.category }}</td>
+                        <td class="text-title font-medium border-b border-zinc-400/10 hidden sm:table-cell">{{ transaction.account }}</td>
 
-                        <td class="border-b border-zinc-400/10">
-                            <span
-                                class="text-xs px-2 py-1 bg-background text-secondary rounded-md border border-zinc-400/10">
+                        <td class="border-b border-zinc-400/10 hidden lg:table-cell">
+                            <span class="text-xs px-2 py-1 bg-background text-secondary rounded-md border border-zinc-400/10">
                                 {{ transaction.group }}
                             </span>
                         </td>
@@ -93,12 +104,7 @@
                             {{ transaction.type === 'INCOME' ? '+ ' : '- ' }}
                             {{ transaction.amount | currency:'BRL':'symbol':'1.2-2' }}
                         </td>
-
-                        <td class="border-b border-zinc-400/10 text-right font-medium"
-                            [ngClass]="transaction.type === 'INCOME' ? 'text-income' : 'text-expense'">
-                            {{ transaction.type === 'INCOME' ? '+ ' : '- ' }}
-                            {{ transaction.amount | currency:'BRL':'symbol':'1.2-2' }}
-                        </td>
+                        
                         <td class="border-b border-zinc-400/10 text-center">
                             <button type="button"
                                 class="p-2 text-secondary hover:text-title hover:bg-zinc-700/30 rounded-lg transition-colors cursor-pointer"
@@ -111,7 +117,7 @@
 
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td colspan="6" class="text-center p-8 text-secondary">
+                        <td colspan="7" class="text-center p-8 text-secondary">
                             Nenhuma transação encontrada.
                         </td>
                     </tr>
@@ -159,8 +165,7 @@
             <input pInputText formControlName="description" placeholder="Ex: Compra no supermercado"
                 class="w-full bg-input border border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand"
                 [ngClass]="{'border-expense!': isInvalid('description')}" />
-            <small *ngIf="isInvalid('description')" class="text-expense text-xs mt-1 block">A descrição é
-                obrigatória.</small>
+            <small *ngIf="isInvalid('description')" class="text-expense text-xs mt-1 block">A descrição é obrigatória.</small>
         </div>
 
         <div>
@@ -168,8 +173,7 @@
             <p-select formControlName="category" [options]="categories" optionLabel="label" optionValue="value"
                 placeholder="Selecione uma categoria" [editable]="true" styleClass="w-full bg-input border-zinc-700/50"
                 [ngClass]="{'border-expense': isInvalid('category')}" />
-            <small *ngIf="isInvalid('category')" class="text-expense text-xs mt-1 block">A categoria é
-                obrigatória.</small>
+            <small *ngIf="isInvalid('category')" class="text-expense text-xs mt-1 block">A categoria é obrigatória.</small>
         </div>
 
         <div>
@@ -182,7 +186,7 @@
 
         <div>
             <label class="block text-xs text-secondary font-medium mb-2">Data</label>
-            <p-datepicker formControlName="date" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full"
+            <p-datepicker formControlName="date" dateFormat="dd/mm/yy" [showIcon]="true" styleClass="w-full bg-input border-zinc-700/50"
                 [ngClass]="{'border-expense': isInvalid('date')}" />
             <small *ngIf="isInvalid('date')" class="text-expense text-xs mt-1 block">A data é obrigatória.</small>
         </div>

@@ -1,6 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms'; // FormsModule adicionado aqui
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+
+// PrimeNG Modules
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -10,13 +12,14 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
-import { MessageService } from 'primeng/api';
+import { MessageService, MenuItem, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { MenuModule } from 'primeng/menu';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+
+// Services
 import { TransactionService } from '../../core/services/transaction-service';
 import { GroupService } from '../../core/services/group-service';
-import { MenuModule } from 'primeng/menu';
-import { MenuItem, ConfirmationService } from 'primeng/api';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-transactions',
@@ -24,7 +27,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   imports: [
     CommonModule, 
     ReactiveFormsModule, 
-    FormsModule, // E adicionado aqui também!
+    FormsModule, 
     TableModule, 
     ButtonModule, 
     InputTextModule, 
@@ -42,18 +45,44 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
   templateUrl: './transactions.html',
   styleUrl: './transactions.css'
 })
-export class Transactions implements OnInit {
+export class TransactionsComponent implements OnInit { // Alterado para TransactionsComponent (boa prática Angular)
+  
+  // Injeções
   private fb = inject(FormBuilder);
   private messageService = inject(MessageService);
   private transactionService = inject(TransactionService);
   private groupService = inject(GroupService);
   private confirmationService = inject(ConfirmationService);
 
-  // Controle do Modal
-  displayModal = false;
-  transactionForm: FormGroup;
+  // --- VARIÁVEIS DE UPLOAD (MVP) ---
+  selectedFile: File | null = null;
+  selectedBank: string = 'NUBANK'; 
+  groupId: number = 1; 
+  isUploading: boolean = false;
 
-  // Listas de Seleção
+  // --- VARIÁVEIS DE LISTAGEM E FILTROS ---
+  allTransactions: any[] = [];
+  transactionsList: any[] = [];
+  selectedPeriod: string = 'thisMonth';
+  customDateRange: Date[] = [];
+  periodOptions = [
+    { label: 'Este Mês', value: 'thisMonth' },
+    { label: 'Último Mês', value: 'lastMonth' },
+    { label: 'Últimos 30 dias', value: 'last30days' },
+    { label: 'Este Ano', value: 'thisYear' },
+    { label: 'Todo o Período', value: 'all' },
+    { label: 'Personalizado...', value: 'custom' }
+  ];
+
+  // --- VARIÁVEIS DA TABELA E AÇÕES ---
+  menuItems: MenuItem[] = [];
+  selectedTransaction: any = null;
+
+  // --- VARIÁVEIS DO MODAL/FORMULÁRIO ---
+  displayModal = false;
+  editingId: number | null = null;
+  transactionForm: FormGroup;
+  
   categories = [
     { label: 'Alimentação', value: 'Alimentação' },
     { label: 'Transporte', value: 'Transporte' },
@@ -72,26 +101,6 @@ export class Transactions implements OnInit {
   ];
 
   groups: { label: string, value: string }[] = [];
-
-  // NOVAS VARIÁVEIS PARA O FILTRO E IMPORTAÇÃO
-  allTransactions: any[] = [];
-  transactionsList: any[] = [];
-  
-  periodOptions = [
-    { label: 'Este Mês', value: 'thisMonth' },
-    { label: 'Último Mês', value: 'lastMonth' },
-    { label: 'Últimos 30 dias', value: 'last30days' },
-    { label: 'Este Ano', value: 'thisYear' },
-    { label: 'Todo o Período', value: 'all' },
-    { label: 'Personalizado...', value: 'custom' }
-  ];
-  
-  selectedPeriod: string = 'thisMonth';
-  customDateRange: Date[] = [];
-
-  menuItems: MenuItem[] = [];
-  selectedTransaction: any = null;
-  editingId: number | null = null;
 
   constructor() {
     this.transactionForm = this.fb.group({
@@ -116,7 +125,9 @@ export class Transactions implements OnInit {
     ];
   }
 
-  // --- BUSCA DE DADOS E FILTROS ---
+  // =========================================================================
+  // MÉTODOS DE BUSCA E FILTRO
+  // =========================================================================
 
   loadTransactions() {
     this.transactionService.getAll().subscribe({
@@ -134,17 +145,28 @@ export class Transactions implements OnInit {
             group: t.groupName, 
             type: t.type,
             amount: t.amount,
-            rawDate: new Date(t.date + 'T00:00:00') // Salva a data real para facilitar o filtro
+            rawDate: new Date(t.date + 'T00:00:00')
           };
         });
         
-        // Aplica o filtro de período assim que carrega
         this.applyFilter();
       },
       error: (err) => {
         console.error('Erro ao buscar transações', err);
         this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar as transações' });
       }
+    });
+  }
+
+  loadGroups() {
+    this.groupService.getAll().subscribe({
+      next: (data) => {
+        this.groups = data.map(g => ({
+          label: g.name,
+          value: g.name
+        }));
+      },
+      error: (err) => console.error('Erro ao carregar grupos', err)
     });
   }
 
@@ -201,96 +223,59 @@ export class Transactions implements OnInit {
       filtered = this.allTransactions.filter(t => t.rawDate >= startDate! && t.rawDate <= endDate!);
     }
 
-    // Atualiza a tabela com a lista filtrada
     this.transactionsList = [...filtered];
   }
 
-  loadGroups() {
-    this.groupService.getAll().subscribe({
-      next: (data) => {
-        this.groups = data.map(g => ({
-          label: g.name,
-          value: g.name
-        }));
-      },
-      error: (err) => console.error('Erro ao carregar grupos', err)
-    });
-  }
-
-  // --- IMPORTAÇÃO DE EXTRATO ---
+  // =========================================================================
+  // IMPORTAÇÃO DE EXTRATO (UPLOAD)
+  // =========================================================================
 
   onFileSelected(event: any) {
     const file: File = event.target.files[0];
     
     if (file) {
-      // 1. Array com as extensões permitidas
+      this.selectedFile = file; // Guarda o ficheiro no estado
       const allowedExtensions = ['.csv', '.xls', '.xlsx', '.ofx'];
       const fileName = file.name.toLowerCase();
       
-      // 2. Verifica se o nome do arquivo termina com alguma das extensões permitidas
       const isValid = allowedExtensions.some(ext => fileName.endsWith(ext));
 
       if (!isValid) {
-        this.messageService.add({ 
-          severity: 'warn', 
-          summary: 'Arquivo não suportado', 
-          detail: 'Por favor, selecione apenas arquivos .CSV, .XLS, .XLSX ou .OFX.' 
-        });
-        event.target.value = ''; // Limpa o input
-        return; // Para a execução aqui se for inválido
+        this.messageService.add({ severity: 'warn', summary: 'Arquivo não suportado', detail: 'Selecione apenas arquivos .CSV, .XLS, .XLSX ou .OFX.' });
+        event.target.value = ''; 
+        this.selectedFile = null;
+        return; 
       }
 
-      // 3. Se passou na validação, avisa o usuário e prepara o envio
+      this.isUploading = true;
       this.messageService.add({ severity: 'info', summary: 'Processando Extrato', detail: `Lendo arquivo ${file.name}...` });
       
-      // 4. Monta o pacote de dados (FormData) para enviar ao Java
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      // 5. Envia para o Backend usando o serviço
-      this.transactionService.uploadStatement(formData).subscribe({
+      // Chamada ajustada para o método uploadStatement do service
+      this.transactionService.uploadStatement(this.groupId, this.selectedFile, this.selectedBank).subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Importação Concluída', detail: 'As transações foram adicionadas.' });
-          this.loadTransactions(); // Recarrega a tabela para mostrar as novas contas
+          this.isUploading = false;
+          this.selectedFile = null;
+          this.loadTransactions(); 
         },
         error: (err) => {
           console.error('Erro no upload', err);
+          this.isUploading = false;
           this.messageService.add({ severity: 'error', summary: 'Erro na Importação', detail: 'Falha ao processar o arquivo.' });
         }
       });
 
-      // 6. Limpa o input para permitir selecionar o mesmo arquivo novamente, se necessário
       event.target.value = '';
     }
   }
 
-  // --- MÉTODOS DE AÇÃO NA TABELA ---
+  // =========================================================================
+  // AÇÕES DA TABELA
+  // =========================================================================
 
   openMenu(event: Event, menu: any, transaction: any) {
     this.selectedTransaction = transaction; 
     menu.toggle(event); 
-  }
-
-  editTransaction(transaction: any) {
-    this.editingId = transaction.id; 
-
-    const dateParts = transaction.date.split('/');
-    const dateObj = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
-
-    const isShared = transaction.group && transaction.group !== 'Pessoal';
-
-    this.transactionForm.patchValue({
-      type: transaction.type,
-      amount: transaction.amount,
-      description: transaction.description,
-      category: transaction.category,
-      account: transaction.account,
-      date: dateObj,
-      isShared: isShared,
-      sharedGroups: isShared ? transaction.group : null
-    });
-
-    this.displayModal = true;
   }
 
   confirmDelete(transaction: any) {
@@ -313,7 +298,9 @@ export class Transactions implements OnInit {
     });
   }
 
-  // --- MÉTODOS DO MODAL ---
+  // =========================================================================
+  // CONTROLE DO MODAL DE CRIAÇÃO/EDIÇÃO
+  // =========================================================================
 
   showModal() {
     this.editingId = null; 
@@ -324,6 +311,28 @@ export class Transactions implements OnInit {
   hideModal() {
     this.displayModal = false;
     this.editingId = null; 
+  }
+
+  editTransaction(transaction: any) {
+    this.editingId = transaction.id; 
+
+    const dateParts = transaction.date.split('/');
+    const dateObj = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+
+    const isShared = transaction.group && transaction.group !== 'Pessoal';
+
+    this.transactionForm.patchValue({
+      type: transaction.type,
+      amount: transaction.amount,
+      description: transaction.description,
+      category: transaction.category,
+      account: transaction.account,
+      date: dateObj,
+      isShared: isShared,
+      sharedGroups: isShared ? transaction.group : null
+    });
+
+    this.displayModal = true;
   }
 
   setTransactionType(type: 'INCOME' | 'EXPENSE') {

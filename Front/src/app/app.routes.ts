@@ -4,7 +4,7 @@ import { UserRegister } from './components/user-register/user-register';
 import { Dashboard } from './components/dashboard/dashboard';
 import { MainLayout } from './components/main-layout/main-layout'; // Importe o layout
 import { authGuard } from './core/services/auth-guard';
-import { Transactions } from './components/transactions/transactions';
+import { TransactionsComponent } from './components/transactions/transactions';
 import { GrupoDashboardComponent } from './components/grupo-dashboard/grupo-dashboard';
 
 export const routes: Routes = [
@@ -20,7 +20,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'dashboard', component: Dashboard },
-      { path: 'transactions', component: Transactions },
+      { path: 'transactions', component: TransactionsComponent },
       { path: 'group', component: GrupoDashboardComponent },
     ]
   },
