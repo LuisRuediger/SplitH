@@ -12,5 +12,4 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findByUserOrderByIdDesc(User user);
 
     // Busca todas as transações de um grupo específico, ordenadas da mais nova pra mais velha
-    List<Transaction> findByGroupNameOrderByIdDesc(String groupName);
-}
+    List<Transaction> findByGroupId();}

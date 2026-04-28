@@ -1,6 +1,7 @@
 package com.tcc.splith.controller;
 
 import com.tcc.splith.config.JWTUserData;
+import com.tcc.splith.entity.Group;
 import com.tcc.splith.entity.Transaction;
 import com.tcc.splith.entity.User;
 import com.tcc.splith.repository.TransactionRepository;
@@ -37,7 +38,7 @@ public class TransactionController {
 
     @GetMapping("/group/{groupName}")
     public ResponseEntity<List<Transaction>> getGroupTransactions(@PathVariable String groupName) {
-        List<Transaction> transactions = transactionRepository.findByGroupNameOrderByIdDesc(groupName);
+        List<Transaction> transactions = transactionRepository.findByGroupId();
         return ResponseEntity.ok(transactions);
     }
 
@@ -55,7 +56,7 @@ public class TransactionController {
         t.setDate(request.date());
         t.setCategory(request.category());
         t.setAccount(request.account());
-        t.setGroupName(request.groupName());
+//        t.setGroupName(request.groupName());
         t.setType(request.type());
 
         Transaction saved = transactionRepository.save(t);
