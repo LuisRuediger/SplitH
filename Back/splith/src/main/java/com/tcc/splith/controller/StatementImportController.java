@@ -1,6 +1,7 @@
 package com.tcc.splith.controller;
 
 import com.tcc.splith.config.JWTUserData;
+import com.tcc.splith.entity.Group;
 import com.tcc.splith.entity.User;
 import com.tcc.splith.repository.UserRepository;
 import com.tcc.splith.service.StatementImportService;
@@ -26,7 +27,7 @@ public class StatementImportController {
     public ResponseEntity<String> importFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam("bankCode") String bankCode,
-            @RequestParam("groupName") String groupName) { // <- Novo parâmetro!
+            @RequestParam("groupName") Group group) { // <- Novo parâmetro!
 
         try {
             // 1. Descobre quem é o usuário logado através do Token JWT
@@ -34,7 +35,7 @@ public class StatementImportController {
             User user = userRepository.findById(loggedUser.userId()).orElseThrow();
 
             // 2. Repassa a bola para o Maestro cuidar de tudo, agora passando o usuário e o grupo
-            importService.importStatement(file, bankCode, user, groupName);
+            importService.importStatement(file, bankCode, user,group );
 
             return ResponseEntity.ok("Arquivo lido e transações salvas com sucesso no banco de dados!");
 

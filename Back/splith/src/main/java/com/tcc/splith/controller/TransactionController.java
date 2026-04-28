@@ -1,11 +1,14 @@
 package com.tcc.splith.controller;
 
 import com.tcc.splith.config.JWTUserData;
+import com.tcc.splith.dto.TransactionRequest;
 import com.tcc.splith.entity.Group;
 import com.tcc.splith.entity.Transaction;
 import com.tcc.splith.entity.User;
+import com.tcc.splith.repository.GroupRepository;
 import com.tcc.splith.repository.TransactionRepository;
 import com.tcc.splith.repository.UserRepository;
+import com.tcc.splith.service.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,45 +27,35 @@ public class TransactionController {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
+    private final TransactionService transactionService;
+    private final GroupRepository groupRepository;
 
-
-    public TransactionController(TransactionRepository transactionRepository, UserRepository userRepository, StatementImportService importService) {
+    public TransactionController(TransactionRepository transactionRepository, UserRepository userRepository, TransactionService transactionService, GroupRepository groupRepository) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
-    }
-
-    // Criamos um Record interno para receber os dados do Angular
-    public record TransactionRequest(String description, BigDecimal amount, LocalDate date, String category,
-                                     String account, String groupName, String type) {
+        this.transactionService = transactionService;
+        this.groupRepository = groupRepository;
     }
 
     @GetMapping("/group/{groupName}")
     public ResponseEntity<List<Transaction>> getGroupTransactions(@PathVariable String groupName) {
-        List<Transaction> transactions = transactionRepository.findByGroupId();
+        // 1. Busca o grupo pelo nome
+        Group group = groupRepository.findByName(groupName)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grupo não encontrado"));
+
+        // 2. Busca as transações usando o ID do grupo encontrado
+        List<Transaction> transactions = transactionRepository.findByGroupId(group.getId());
+
         return ResponseEntity.ok(transactions);
     }
 
     @PostMapping
     public ResponseEntity<Transaction> createTransaction(@RequestBody TransactionRequest request) {
-        // Pega os dados do usuário logado via Token JWT
         JWTUserData loggedUser = (JWTUserData) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findById(loggedUser.userId()).orElseThrow();
 
-        // Monta a transação e salva
-        Transaction t = new Transaction();
-        t.setUser(user);
-        t.setDescription(request.description());
-        t.setAmount(request.amount());
-        t.setDate(request.date());
-        t.setCategory(request.category());
-        t.setAccount(request.account());
-//        t.setGroupName(request.groupName());
-        t.setType(request.type());
-
-        Transaction saved = transactionRepository.save(t);
+        Transaction saved = transactionService.createAndSplitTransaction(request, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-
-
     }
 
     @GetMapping
@@ -83,22 +76,26 @@ public class TransactionController {
         JWTUserData loggedUser = (JWTUserData) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findById(loggedUser.userId()).orElseThrow();
 
-        // Busca a transação e garante que ela existe
-        Transaction t = transactionRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transação não encontrada"));
+        Transaction t = transactionRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transação não encontrada"));
 
-        // Regra de segurança: O usuário só pode editar as próprias transações!
         if (!t.getUser().getId().equals(user.getId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        // Atualiza os dados
         t.setDescription(request.description());
         t.setAmount(request.amount());
         t.setDate(request.date());
         t.setCategory(request.category());
         t.setAccount(request.account());
-        t.setGroupName(request.groupName());
         t.setType(request.type());
+
+        if (request.groupName() != null && !request.groupName().equalsIgnoreCase("Pessoal")) {
+            Group group = groupRepository.findByName(request.groupName()).orElse(null);
+            t.setGroup(group);
+        } else {
+            t.setGroup(null);
+        }
 
         return ResponseEntity.ok(transactionRepository.save(t));
     }
