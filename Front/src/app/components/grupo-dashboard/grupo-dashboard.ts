@@ -15,6 +15,18 @@ import { GroupService, GroupRole } from '../../core/services/group-service';
 import { TransactionService } from '../../core/services/transaction-service';
 import { AuthService } from '../../core/services/auth-service';
 
+export interface TransactionSplitUser {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface TransactionSplitDTO {
+  id: number;
+  user: TransactionSplitUser;
+  amountOwed: number;
+}
+
 export interface Member {
   id: string;
   name: string;
@@ -37,6 +49,7 @@ export interface Transaction {
   totalAmount: number;
   userShare: number;
   status: boolean;
+  splits: TransactionSplitDTO[];
 }
 
 @Component({
@@ -196,17 +209,24 @@ export class GrupoDashboardComponent implements OnInit {
     this.transactionService.getByGroup(groupName).subscribe({
       next: (data) => {
         const expenses = data.filter(t => t.type === 'EXPENSE');
+        const currentUserIdNum = parseInt(this.currentUserId, 10);
 
         this.resume.groupTotal = expenses.reduce((acc, t) => acc + t.amount, 0);
         this.resume.monthlyTransactions = data.length;
 
-        const sharePerPerson = this.resume.activeMembersCount > 0
-          ? this.resume.groupTotal / this.resume.activeMembersCount
-          : 0;
-
-        this.resume.userShare = sharePerPerson;
+        this.resume.userShare = expenses.reduce((acc, t) => {
+          const mySplit = (t.splits ?? []).find((s: TransactionSplitDTO) => s.user.id === currentUserIdNum);
+          return acc + (mySplit ? mySplit.amountOwed : 0);
+        }, 0);
 
         this.members = groupMembers.map(m => {
+          const memberIdNum = typeof m.id === 'string' ? parseInt(m.id, 10) : m.id;
+          const memberTotal = expenses.reduce((acc, t) => {
+            const split = (t.splits ?? []).find((s: TransactionSplitDTO) => s.user.id === memberIdNum);
+            return acc + (split ? split.amountOwed : 0);
+          }, 0);
+          const percentage = this.resume.groupTotal > 0
+            ? Math.round((memberTotal / this.resume.groupTotal) * 100) : 0;
           const isSelf = m.email === this.currentUserEmail;
           return {
             id: m.id.toString(),
@@ -215,8 +235,8 @@ export class GrupoDashboardComponent implements OnInit {
             role: m.role as GroupRole,
             displayRole: isSelf ? 'Você' : this.roleLabel(m.role),
             initials: m.name.charAt(0).toUpperCase(),
-            amount: sharePerPerson,
-            percentage: Math.round(100 / this.resume.activeMembersCount)
+            amount: memberTotal,
+            percentage
           };
         });
 
@@ -230,6 +250,7 @@ export class GrupoDashboardComponent implements OnInit {
           const dateParts = t.date.split('-');
           const formattedDate = dateParts.length === 3 ? `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}` : t.date;
           const paidByName = t.paidByName || 'Desconhecido';
+          const mySplit = (t.splits ?? []).find((s: TransactionSplitDTO) => s.user.id === currentUserIdNum);
 
           return {
             id: t.id.toString(),
@@ -240,8 +261,9 @@ export class GrupoDashboardComponent implements OnInit {
             paidBy: paidByName,
             paidByInitials: paidByName.charAt(0).toUpperCase(),
             totalAmount: t.amount,
-            userShare: t.amount / this.resume.activeMembersCount,
-            status: true
+            userShare: mySplit ? mySplit.amountOwed : 0,
+            status: true,
+            splits: t.splits ?? []
           };
         });
 

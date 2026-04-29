@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Getter
@@ -21,6 +22,10 @@ public class TransactionSplit {
     @JoinColumn(name = "transaction_id", nullable = false)
     private Transaction transaction;
 
+    @JsonIgnoreProperties({"password", "authorities", "accountNonExpired",
+                           "accountNonLocked", "credentialsNonExpired",
+                           "enabled", "username",
+                           "hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

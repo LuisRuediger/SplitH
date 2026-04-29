@@ -146,7 +146,7 @@ selectedBank: string = 'NUBANK_CSV';
             description: t.description,
             category: t.category,
             account: t.account,
-            group: t.groupName, 
+            group: t.group?.name ?? 'Pessoal',
             type: t.type,
             amount: t.amount,
             rawDate: new Date(t.date + 'T00:00:00')
