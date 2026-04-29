@@ -3,8 +3,11 @@ package com.tcc.splith.controller;
 import com.tcc.splith.config.JWTUserData;
 import com.tcc.splith.dto.TransactionRequest;
 import com.tcc.splith.entity.Group;
+import com.tcc.splith.entity.GroupMember;
+import com.tcc.splith.entity.GroupRole;
 import com.tcc.splith.entity.Transaction;
 import com.tcc.splith.entity.User;
+import com.tcc.splith.repository.GroupMemberRepository;
 import com.tcc.splith.repository.GroupRepository;
 import com.tcc.splith.repository.TransactionRepository;
 import com.tcc.splith.repository.UserRepository;
@@ -14,8 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 
 import com.tcc.splith.service.StatementImportService;
@@ -29,23 +30,27 @@ public class TransactionController {
     private final UserRepository userRepository;
     private final TransactionService transactionService;
     private final GroupRepository groupRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
-    public TransactionController(TransactionRepository transactionRepository, UserRepository userRepository, TransactionService transactionService, GroupRepository groupRepository) {
+    public TransactionController(TransactionRepository transactionRepository, UserRepository userRepository, TransactionService transactionService, GroupRepository groupRepository, GroupMemberRepository groupMemberRepository) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.transactionService = transactionService;
         this.groupRepository = groupRepository;
+        this.groupMemberRepository = groupMemberRepository;
     }
 
     @GetMapping("/group/{groupName}")
     public ResponseEntity<List<Transaction>> getGroupTransactions(@PathVariable String groupName) {
-        // 1. Busca o grupo pelo nome
+        JWTUserData loggedUser = (JWTUserData) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
         Group group = groupRepository.findByName(groupName)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grupo não encontrado"));
 
-        // 2. Busca as transações usando o ID do grupo encontrado
-        List<Transaction> transactions = transactionRepository.findByGroupId(group.getId());
+        groupMemberRepository.findByGroupIdAndUserId(group.getId(), loggedUser.userId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado"));
 
+        List<Transaction> transactions = transactionRepository.findByGroupId(group.getId());
         return ResponseEntity.ok(transactions);
     }
 
@@ -53,6 +58,16 @@ public class TransactionController {
     public ResponseEntity<Transaction> createTransaction(@RequestBody TransactionRequest request) {
         JWTUserData loggedUser = (JWTUserData) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User user = userRepository.findById(loggedUser.userId()).orElseThrow();
+
+        if (request.groupName() != null && !request.groupName().equalsIgnoreCase("Pessoal")) {
+            Group group = groupRepository.findByName(request.groupName())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grupo não encontrado"));
+            GroupMember membership = groupMemberRepository.findByGroupIdAndUserId(group.getId(), user.getId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Acesso negado"));
+            if (membership.getRole() == GroupRole.VIEWER) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Visualizadores não podem criar transações");
+            }
+        }
 
         Transaction saved = transactionService.createAndSplitTransaction(request, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);

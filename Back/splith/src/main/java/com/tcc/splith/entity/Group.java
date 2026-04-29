@@ -1,5 +1,6 @@
 package com.tcc.splith.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -21,12 +22,7 @@ public class Group {
     private String name;
     private String description;
 
-    // Relacionamento Muitos-Para-Muitos com os Usuários
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "user_group", // Nome da tabela intermediária
-            joinColumns = @JoinColumn(name = "group_id"), // A chave deste lado (Grupo)
-            inverseJoinColumns = @JoinColumn(name = "user_id") // A chave do outro lado (Usuário)
-    )
-    private Set<User> members = new HashSet<>();
+    @JsonIgnore
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<GroupMember> groupMembers = new HashSet<>();
 }

@@ -9,9 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -29,10 +27,6 @@ public class User implements UserDetails {
     @JsonIgnore
     private String password;
     private String email;
-
-    @JsonIgnore // Evita que o Java trave num loop infinito na hora de enviar para o Angular
-    @ManyToMany(mappedBy = "members", fetch = FetchType.LAZY)
-    private Set<Group> groups = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

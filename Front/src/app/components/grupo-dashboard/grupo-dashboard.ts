@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, HostListener, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -11,14 +11,16 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 
-import { GroupService } from '../../core/services/group-service';
+import { GroupService, GroupRole } from '../../core/services/group-service';
 import { TransactionService } from '../../core/services/transaction-service';
 import { AuthService } from '../../core/services/auth-service';
 
 export interface Member {
   id: string;
   name: string;
-  role: string;
+  email: string;
+  role: GroupRole;
+  displayRole: string;
   initials: string;
   amount: number;
   percentage: number;
@@ -76,6 +78,8 @@ export class GrupoDashboardComponent implements OnInit {
 
   currentGroup: any = null;
   currentUserEmail: string = '';
+  currentUserId: string = '';
+  currentUserRole: GroupRole | null = null;
 
   resume = {
     groupTotal: 0,
@@ -88,10 +92,50 @@ export class GrupoDashboardComponent implements OnInit {
   members: Member[] = [];
   transactions: Transaction[] = [];
 
-  // --- CONTROLE DO MODAL DE MEMBRO ---
+  // --- Modal: adicionar membro ---
   displayAddMemberModal = false;
   isAddingMember = false;
   memberForm: FormGroup;
+
+  // --- Modal: alterar papel ---
+  displayRoleModal = false;
+  selectedMember: Member | null = null;
+  selectedRole: GroupRole = 'MEMBER';
+  isChangingRole = false;
+  roleOptions = [
+    { label: 'Administrador', value: 'ADMIN' },
+    { label: 'Membro', value: 'MEMBER' },
+    { label: 'Visualizador', value: 'VIEWER' },
+  ];
+
+  // --- Modal: confirmar remoção ---
+  displayRemoveModal = false;
+  memberToRemove: Member | null = null;
+  isRemovingMember = false;
+
+  // --- Menu de três pontos ---
+  openMenuMemberId: string | null = null;
+  menuPosition: { top: number; right: number } = { top: 0, right: 0 };
+
+  @HostListener('document:click')
+  onDocumentClick() {
+    this.openMenuMemberId = null;
+  }
+
+  toggleMemberMenu(memberId: string, event: MouseEvent) {
+    event.stopPropagation();
+    if (this.openMenuMemberId === memberId) {
+      this.openMenuMemberId = null;
+      return;
+    }
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    this.menuPosition = { top: rect.bottom + 4, right: window.innerWidth - rect.right };
+    this.openMenuMemberId = memberId;
+  }
+
+  closeMemberMenu() {
+    this.openMenuMemberId = null;
+  }
 
   constructor() {
     this.memberForm = this.fb.group({
@@ -111,16 +155,30 @@ export class GrupoDashboardComponent implements OnInit {
     });
   }
 
+  get isAdmin(): boolean {
+    return this.currentUserRole === 'ADMIN';
+  }
+
   extractCurrentUser() {
     const token = this.authService.token;
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
         this.currentUserEmail = payload.sub;
+        this.currentUserId = payload.userId?.toString() ?? '';
       } catch (e) {
         console.error('Erro ao ler token JWT', e);
       }
     }
+  }
+
+  roleLabel(role: GroupRole): string {
+    const labels: Record<GroupRole, string> = {
+      ADMIN: 'Admin',
+      MEMBER: 'Membro',
+      VIEWER: 'Visualizador',
+    };
+    return labels[role];
   }
 
   loadGroupData(id: number) {
@@ -138,28 +196,35 @@ export class GrupoDashboardComponent implements OnInit {
     this.transactionService.getByGroup(groupName).subscribe({
       next: (data) => {
         const expenses = data.filter(t => t.type === 'EXPENSE');
-        
+
         this.resume.groupTotal = expenses.reduce((acc, t) => acc + t.amount, 0);
         this.resume.monthlyTransactions = data.length;
 
-        const sharePerPerson = this.resume.activeMembersCount > 0 
-            ? this.resume.groupTotal / this.resume.activeMembersCount 
-            : 0;
-            
+        const sharePerPerson = this.resume.activeMembersCount > 0
+          ? this.resume.groupTotal / this.resume.activeMembersCount
+          : 0;
+
         this.resume.userShare = sharePerPerson;
 
         this.members = groupMembers.map(m => {
+          const isSelf = m.email === this.currentUserEmail;
           return {
             id: m.id.toString(),
             name: m.name,
-            role: m.email === this.currentUserEmail ? 'Você' : 'Membro',
+            email: m.email,
+            role: m.role as GroupRole,
+            displayRole: isSelf ? 'Você' : this.roleLabel(m.role),
             initials: m.name.charAt(0).toUpperCase(),
             amount: sharePerPerson,
             percentage: Math.round(100 / this.resume.activeMembersCount)
           };
         });
 
-        this.members.sort((a, b) => a.role === 'Você' ? -1 : 1);
+        this.members.sort((a, b) => (a.email === this.currentUserEmail ? -1 : 1));
+
+        const self = groupMembers.find(m => m.email === this.currentUserEmail);
+        this.currentUserRole = self?.role ?? null;
+        this.currentUserId = self?.id?.toString() ?? this.currentUserId;
 
         this.transactions = expenses.map(t => {
           const dateParts = t.date.split('-');
@@ -186,7 +251,7 @@ export class GrupoDashboardComponent implements OnInit {
     });
   }
 
-  // --- FUNÇÕES DO MODAL ---
+  // --- Adicionar membro ---
 
   showAddMemberModal() {
     this.memberForm.reset();
@@ -205,7 +270,7 @@ export class GrupoDashboardComponent implements OnInit {
       this.groupService.addMember(this.currentGroup.id, email).subscribe({
         next: () => {
           this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Membro adicionado!' });
-          this.loadGroupData(this.currentGroup.id); // Mágica: recarrega a tela com a pessoa nova!
+          this.loadGroupData(this.currentGroup.id);
           this.hideAddMemberModal();
           this.isAddingMember = false;
         },
@@ -213,6 +278,8 @@ export class GrupoDashboardComponent implements OnInit {
           this.isAddingMember = false;
           if (err.status === 404) {
             this.messageService.add({ severity: 'error', summary: 'Não encontrado', detail: 'Nenhum usuário com este email.' });
+          } else if (err.status === 409) {
+            this.messageService.add({ severity: 'warn', summary: 'Aviso', detail: 'Este usuário já é membro do grupo.' });
           } else {
             this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível adicionar o membro.' });
           }
@@ -228,7 +295,76 @@ export class GrupoDashboardComponent implements OnInit {
     return control?.invalid && control?.touched;
   }
 
-  // --- VISUAL E GRÁFICOS ---
+  // --- Alterar papel ---
+
+  showRoleModal(member: Member) {
+    this.selectedMember = member;
+    this.selectedRole = member.role;
+    this.displayRoleModal = true;
+  }
+
+  hideRoleModal() {
+    this.displayRoleModal = false;
+    this.selectedMember = null;
+  }
+
+  onChangeRole() {
+    if (!this.selectedMember || !this.currentGroup) return;
+    this.isChangingRole = true;
+
+    this.groupService.changeMemberRole(this.currentGroup.id, parseInt(this.selectedMember.id), this.selectedRole).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Papel alterado com sucesso!' });
+        this.loadGroupData(this.currentGroup.id);
+        this.hideRoleModal();
+        this.isChangingRole = false;
+      },
+      error: (err) => {
+        this.isChangingRole = false;
+        if (err.status === 409) {
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'O grupo deve ter pelo menos um administrador.' });
+        } else {
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível alterar o papel.' });
+        }
+      }
+    });
+  }
+
+  // --- Remover membro ---
+
+  confirmRemoveMember(member: Member) {
+    this.memberToRemove = member;
+    this.displayRemoveModal = true;
+  }
+
+  hideRemoveModal() {
+    this.displayRemoveModal = false;
+    this.memberToRemove = null;
+  }
+
+  onRemoveMember() {
+    if (!this.memberToRemove || !this.currentGroup) return;
+    this.isRemovingMember = true;
+
+    this.groupService.removeMember(this.currentGroup.id, parseInt(this.memberToRemove.id)).subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Membro removido.' });
+        this.loadGroupData(this.currentGroup.id);
+        this.hideRemoveModal();
+        this.isRemovingMember = false;
+      },
+      error: (err) => {
+        this.isRemovingMember = false;
+        if (err.status === 409) {
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'O grupo deve ter pelo menos um administrador.' });
+        } else {
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível remover o membro.' });
+        }
+      }
+    });
+  }
+
+  // --- Visual e gráficos ---
 
   getCategoryStyle(category: string): string {
     const styles: any = {

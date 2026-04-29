@@ -1,11 +1,12 @@
 package com.tcc.splith.service;
 
-import com.tcc.splith.controller.TransactionController;
 import com.tcc.splith.dto.TransactionRequest;
 import com.tcc.splith.entity.Group;
+import com.tcc.splith.entity.GroupMember;
 import com.tcc.splith.entity.Transaction;
 import com.tcc.splith.entity.TransactionSplit;
 import com.tcc.splith.entity.User;
+import com.tcc.splith.repository.GroupMemberRepository;
 import com.tcc.splith.repository.GroupRepository;
 import com.tcc.splith.repository.TransactionRepository;
 import com.tcc.splith.repository.TransactionSplitRepository;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
 
 @Service
 public class TransactionService {
@@ -21,11 +23,13 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final TransactionSplitRepository splitRepository;
     private final GroupRepository groupRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
-    public TransactionService(TransactionRepository transactionRepository, TransactionSplitRepository splitRepository, GroupRepository groupRepository) {
+    public TransactionService(TransactionRepository transactionRepository, TransactionSplitRepository splitRepository, GroupRepository groupRepository, GroupMemberRepository groupMemberRepository) {
         this.transactionRepository = transactionRepository;
         this.splitRepository = splitRepository;
         this.groupRepository = groupRepository;
+        this.groupMemberRepository = groupMemberRepository;
     }
 
     @Transactional
@@ -47,17 +51,18 @@ public class TransactionService {
 
         Transaction savedTransaction = transactionRepository.save(t);
 
-        // Se houver grupo e membros, calcula o rateio (Split)
-        if (group != null && !group.getMembers().isEmpty()) {
-            BigDecimal totalMembers = new BigDecimal(group.getMembers().size());
-            BigDecimal amountPerPerson = request.amount().divide(totalMembers, 2, RoundingMode.HALF_UP);
-
-            for (User member : group.getMembers()) {
-                TransactionSplit split = new TransactionSplit();
-                split.setTransaction(savedTransaction);
-                split.setUser(member);
-                split.setAmountOwed(amountPerPerson);
-                splitRepository.save(split);
+        if (group != null) {
+            List<GroupMember> memberships = groupMemberRepository.findByGroupId(group.getId());
+            if (!memberships.isEmpty()) {
+                BigDecimal totalMembers = new BigDecimal(memberships.size());
+                BigDecimal amountPerPerson = request.amount().divide(totalMembers, 2, RoundingMode.HALF_UP);
+                for (GroupMember membership : memberships) {
+                    TransactionSplit split = new TransactionSplit();
+                    split.setTransaction(savedTransaction);
+                    split.setUser(membership.getUser());
+                    split.setAmountOwed(amountPerPerson);
+                    splitRepository.save(split);
+                }
             }
         }
 

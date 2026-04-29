@@ -16,10 +16,12 @@ import { MessageService, MenuItem, ConfirmationService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { MenuModule } from 'primeng/menu';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TooltipModule } from 'primeng/tooltip';
 
 // Services
 import { TransactionService } from '../../core/services/transaction-service';
 import { GroupService } from '../../core/services/group-service';
+import { AuthService } from '../../core/services/auth-service';
 
 @Component({
   selector: 'app-transactions',
@@ -39,7 +41,8 @@ import { GroupService } from '../../core/services/group-service';
     DialogModule,
     ToastModule,
     MenuModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    TooltipModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './transactions.html',
@@ -52,6 +55,7 @@ export class TransactionsComponent implements OnInit { // Alterado para Transact
   private messageService = inject(MessageService);
   private transactionService = inject(TransactionService);
   private groupService = inject(GroupService);
+  private authService = inject(AuthService);
   private confirmationService = inject(ConfirmationService);
 
   // --- VARIÁVEIS DE UPLOAD (MVP) ---
@@ -100,7 +104,7 @@ selectedBank: string = 'NUBANK_CSV';
     { label: 'Dinheiro', value: 'Dinheiro' }
   ];
 
-  groups: { label: string, value: string }[] = [];
+  groups: { label: string, value: string, disabled: boolean }[] = [];
 
   constructor() {
     this.transactionForm = this.fb.group({
@@ -159,12 +163,20 @@ selectedBank: string = 'NUBANK_CSV';
   }
 
   loadGroups() {
+    const token = this.authService.token;
+    let currentUserEmail = '';
+    if (token) {
+      try {
+        currentUserEmail = JSON.parse(atob(token.split('.')[1])).sub ?? '';
+      } catch { }
+    }
+
     this.groupService.getAll().subscribe({
       next: (data) => {
-        this.groups = data.map(g => ({
-          label: g.name,
-          value: g.name
-        }));
+        this.groups = data.map(g => {
+          const member = g.members?.find(m => m.email === currentUserEmail);
+          return { label: g.name, value: g.name, disabled: member?.role === 'VIEWER' };
+        });
       },
       error: (err) => console.error('Erro ao carregar grupos', err)
     });
