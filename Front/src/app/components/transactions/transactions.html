@@ -3,119 +3,124 @@
 
 <p-menu #menu [popup]="true" [model]="menuItems" appendTo="body" styleClass="w-48 bg-surface border-zinc-700/50" />
 
-<div class="h-full flex flex-col bg-background">
-    <div class="p-6 rounded-lg shadow-sm flex flex-col flex-1 min-h-0">
+<div class="px-8 py-6 space-y-6 bg-background min-h-full animate-slideUp">
 
-        <div class="shrink-0 flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-            <div>
-                <h1 class="text-2xl font-bold text-title">Transações</h1>
-                <p class="text-secondary text-sm mt-1">Gerencie as entradas e saídas</p>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <p-select [options]="[{label: 'Nubank', value: 'NUBANK_CSV'}]" [(ngModel)]="selectedBank"
-                    optionLabel="label" optionValue="value" styleClass="w-32 bg-surface border-zinc-700/50 text-sm" />
-
-                <input type="file" #fileInput accept=".csv, .xls, .xlsx, .ofx" class="hidden"
-                    (change)="onFileSelected($event)">
-
-                <button
-                    class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-secondary bg-surface border border-zinc-700/50 transition-colors hover:text-title hover:border-zinc-500 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                    (click)="fileInput.click()" [disabled]="isUploading">
-                    <i class="pi" [ngClass]="isUploading ? 'pi-spin pi-spinner' : 'pi-upload'"></i>
-                    {{ isUploading ? 'Importando...' : 'Importar Extrato' }}
-                </button>
-
-                <button
-                    class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-white bg-brand transition-colors hover:bg-brand-dark cursor-pointer shadow-md"
-                    (click)="showModal()">
-                    <i class="pi pi-plus"></i>
-                    Nova Transação
-                </button>
-            </div>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-title">Transações</h1>
+            <p class="text-secondary text-sm mt-1">Gerencie as entradas e saídas</p>
         </div>
 
-        <div class="shrink-0 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <div class="relative w-full sm:w-72">
-                <i class="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-secondary"></i>
-                <input pInputText type="text" placeholder="Buscar descrição..."
-                    class="w-full pl-3 pr-10 py-2 bg-background border border-zinc-400/20 text-text placeholder:text-secondary rounded-lg focus:border-brand focus:ring-1 focus:ring-brand"
-                    (input)="dt.filterGlobal($any($event.target).value, 'contains')" />
-            </div>
+        <div class="flex items-center gap-3">
+            <p-select [options]="[{label: 'Nubank', value: 'NUBANK_CSV'}]" [(ngModel)]="selectedBank"
+                optionLabel="label" optionValue="value" styleClass="w-32 bg-surface border-zinc-700/50 text-sm" />
 
-            <div class="flex items-center gap-3 w-full sm:w-auto">
+            <input type="file" #fileInput accept=".csv, .xls, .xlsx, .ofx" class="hidden"
+                (change)="onFileSelected($event)">
+
+            <button
+                class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-secondary bg-surface border border-zinc-700/50 transition-colors hover:text-title hover:border-zinc-500 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                (click)="fileInput.click()" [disabled]="isUploading">
+                <i class="pi" [ngClass]="isUploading ? 'pi-spin pi-spinner' : 'pi-upload'"></i>
+                {{ isUploading ? 'Importando...' : 'Importar Extrato' }}
+            </button>
+
+            <button
+                class="px-4 py-2 flex items-center gap-2 rounded-lg font-medium text-sm text-white bg-brand transition-colors hover:bg-brand-dark cursor-pointer shadow-md"
+                (click)="showModal()">
+                <i class="pi pi-plus"></i>
+                Nova Transação
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-surface border border-zinc-700/30 rounded-2xl overflow-hidden">
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-zinc-700/30 gap-3">
+            <h2 class="text-title text-sm font-semibold">Todas as Transações</h2>
+
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                <div class="relative">
+                    <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-xs"></i>
+                    <input pInputText type="text" placeholder="Buscar descrição..."
+                        class="bg-input border border-zinc-700/50 rounded-xl pl-8 pr-4 py-2 text-xs text-text placeholder:text-secondary focus:outline-none focus:border-brand transition-colors w-52"
+                        (input)="dt.filterGlobal($any($event.target).value, 'contains')" />
+                </div>
+
                 <p-select [options]="periodOptions" [(ngModel)]="selectedPeriod" (onChange)="onPeriodChange()"
                     optionLabel="label" optionValue="value"
-                    styleClass="w-full sm:w-48 bg-surface border-zinc-700/50 text-sm" />
+                    styleClass="!text-xs !h-8 !bg-input !border-zinc-700/50 !text-text" />
 
                 <p-datepicker *ngIf="selectedPeriod === 'custom'" [(ngModel)]="customDateRange" selectionMode="range"
                     [readonlyInput]="true" dateFormat="dd/mm/yy" placeholder="Selecione o período" [showIcon]="true"
                     (onSelect)="onCustomDateChange()"
-                    styleClass="w-full sm:w-68 bg-surface border-zinc-700/50 animate-slideUp text-sm" />
+                    styleClass="!text-xs !h-8 !bg-input !border-zinc-700/50 animate-slideUp" />
             </div>
         </div>
 
-        <div class="flex-1 min-h-0 flex flex-col">
-            <p-table #dt [value]="transactionsList" [rows]="10" [paginator]="true" [scrollable]="true"
-                scrollHeight="flex" [globalFilterFields]="['description', 'category', 'account']"
-                class="h-full flex flex-col">
+        <p-table #dt [value]="transactionsList" [rows]="10" [paginator]="true" [scrollable]="true"
+            scrollHeight="flex" [globalFilterFields]="['description', 'category', 'account']"
+            [tableStyle]="{ 'min-width': '50rem' }">
 
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th class="font-medium text-sm">Data</th>
-                        <th class="font-medium text-sm">Descrição</th>
-                        <th class="font-medium text-sm hidden md:table-cell">Categoria</th>
-                        <th class="font-medium text-sm hidden sm:table-cell">Conta</th>
-                        <th class="font-medium text-sm hidden lg:table-cell">Grupo</th>
-                        <th class="font-medium text-sm text-right">Valor</th>
-                        <th class="w-12"></th>
-                    </tr>
-                </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30">Data</th>
+                    <th class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30">Descrição</th>
+                    <th class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30 hidden md:table-cell">Categoria</th>
+                    <th class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30 hidden sm:table-cell">Conta</th>
+                    <th class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30 hidden lg:table-cell">Grupo</th>
+                    <th class="!bg-input/20 !text-secondary !text-xs !font-semibold !uppercase !tracking-wider !border-b !border-zinc-700/30 !text-right">Valor</th>
+                    <th class="!bg-input/20 !border-b !border-zinc-700/30 w-12"></th>
+                </tr>
+            </ng-template>
 
-                <ng-template pTemplate="body" let-transaction>
-                    <tr class="hover:bg-background/50 transition-colors">
-                        <td class="text-text border-b border-zinc-400/10">{{ transaction.date }}</td>
-                        <td class="text-title font-medium border-b border-zinc-400/10">{{ transaction.description }}
-                        </td>
-                        <td class="text-title font-medium border-b border-zinc-400/10 hidden md:table-cell">{{
-                            transaction.category }}</td>
-                        <td class="text-title font-medium border-b border-zinc-400/10 hidden sm:table-cell">{{
-                            transaction.account }}</td>
+            <ng-template pTemplate="body" let-transaction>
+                <tr class="hover:!bg-zinc-700/15 transition-colors cursor-pointer border-b border-zinc-700/20">
+                    <td class="!text-secondary !text-sm !border-0">{{ transaction.date }}</td>
 
-                        <td class="border-b border-zinc-400/10 hidden lg:table-cell">
-                            <span
-                                class="text-xs px-2 py-1 bg-background text-secondary rounded-md border border-zinc-400/10">
-                                {{ transaction.group }}
-                            </span>
-                        </td>
+                    <td class="!text-title !font-medium !text-sm !border-0">{{ transaction.description }}</td>
 
-                        <td class="border-b border-zinc-400/10 text-right font-medium"
-                            [ngClass]="transaction.type === 'INCOME' ? 'text-income' : 'text-expense'">
-                            {{ transaction.type === 'INCOME' ? '+ ' : '- ' }}
-                            {{ transaction.amount | currency:'BRL':'symbol':'1.2-2' }}
-                        </td>
+                    <td class="!border-0 hidden md:table-cell">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full {{ getCategoryStyle(transaction.category) }}">
+                            {{ transaction.category }}
+                        </span>
+                    </td>
 
-                        <td class="border-b border-zinc-400/10 text-center">
-                            <button type="button" aria-label="Opções da transação"
-                                class="p-2 text-secondary hover:text-title hover:bg-zinc-700/30 rounded-lg transition-colors cursor-pointer"
-                                (click)="openMenu($event, menu, transaction)">
-                                <i class="pi pi-ellipsis-v text-sm"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </ng-template>
+                    <td class="!text-title !font-medium !text-sm !border-0 hidden sm:table-cell">{{ transaction.account }}</td>
 
-                <ng-template pTemplate="emptymessage">
-                    <tr>
-                        <td colspan="7" class="text-center p-8 text-secondary">
-                            Nenhuma transação encontrada.
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
+                    <td class="!border-0 hidden lg:table-cell">
+                        <span class="text-xs px-2.5 py-1 bg-input/50 text-secondary rounded-full border border-zinc-700/30">
+                            {{ transaction.group }}
+                        </span>
+                    </td>
 
+                    <td class="!border-0 !text-right !font-medium !text-sm"
+                        [ngClass]="transaction.type === 'INCOME' ? 'text-income' : 'text-expense'">
+                        {{ transaction.type === 'INCOME' ? '+ ' : '- ' }}
+                        {{ transaction.amount | currency:'BRL':'symbol':'1.2-2' }}
+                    </td>
+
+                    <td class="!border-0 !text-center">
+                        <button type="button" aria-label="Opções da transação"
+                            class="p-2 text-secondary hover:text-title hover:bg-zinc-700/30 rounded-lg transition-colors cursor-pointer"
+                            (click)="openMenu($event, menu, transaction)">
+                            <i class="pi pi-ellipsis-v text-sm"></i>
+                        </button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" class="!text-center py-16">
+                        <i class="pi pi-list text-2xl text-secondary mb-3 block"></i>
+                        <p class="text-secondary text-sm">Nenhuma transação encontrada.</p>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
     </div>
+
 </div>
 
 <p-dialog [(visible)]="displayModal" [modal]="true" [draggable]="false" [resizable]="false"
@@ -129,15 +134,15 @@
             <div class="grid grid-cols-2 gap-3">
                 <button type="button" (click)="setTransactionType('INCOME')"
                     class="flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all font-medium text-sm cursor-pointer"
-                    [ngClass]="transactionForm.get('type')?.value === 'INCOME' 
-                        ? 'border-income bg-income/10 text-income' 
+                    [ngClass]="transactionForm.get('type')?.value === 'INCOME'
+                        ? 'border-income bg-income/10 text-income'
                         : 'border-zinc-700/50 text-secondary hover:border-zinc-600'">
                     <i class="pi pi-arrow-up text-xs"></i> Receita
                 </button>
                 <button type="button" (click)="setTransactionType('EXPENSE')"
                     class="flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all font-medium text-sm cursor-pointer"
-                    [ngClass]="transactionForm.get('type')?.value === 'EXPENSE' 
-                        ? 'border-expense bg-expense/10 text-expense' 
+                    [ngClass]="transactionForm.get('type')?.value === 'EXPENSE'
+                        ? 'border-expense bg-expense/10 text-expense'
                         : 'border-zinc-700/50 text-secondary hover:border-zinc-600'">
                     <i class="pi pi-arrow-down text-xs"></i> Despesa
                 </button>
@@ -156,8 +161,7 @@
             <input pInputText formControlName="description" placeholder="Ex: Compra no supermercado"
                 class="w-full bg-input border border-zinc-700/50 text-text placeholder:text-zinc-600 rounded-lg focus:border-brand"
                 [ngClass]="{'border-expense!': isInvalid('description')}" />
-            <small *ngIf="isInvalid('description')" class="text-expense text-xs mt-1 block">A descrição é
-                obrigatória.</small>
+            <small *ngIf="isInvalid('description')" class="text-expense text-xs mt-1 block">A descrição é obrigatória.</small>
         </div>
 
         <div>
@@ -165,8 +169,7 @@
             <p-select formControlName="category" [options]="categories" optionLabel="label" optionValue="value"
                 placeholder="Selecione uma categoria" [editable]="true" styleClass="w-full bg-input border-zinc-700/50"
                 [ngClass]="{'border-expense': isInvalid('category')}" />
-            <small *ngIf="isInvalid('category')" class="text-expense text-xs mt-1 block">A categoria é
-                obrigatória.</small>
+            <small *ngIf="isInvalid('category')" class="text-expense text-xs mt-1 block">A categoria é obrigatória.</small>
         </div>
 
         <div>

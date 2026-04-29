@@ -383,6 +383,18 @@ selectedBank: string = 'NUBANK_CSV';
     }
   }
 
+  getCategoryStyle(category: string): string {
+    const styles: { [key: string]: string } = {
+      'Alimentação': 'bg-amber-500/15 text-amber-400',
+      'Casa': 'bg-rose-500/15 text-rose-400',
+      'Utilidades': 'bg-sky-500/15 text-sky-400',
+      'Transporte': 'bg-violet-500/15 text-violet-400',
+      'Lazer': 'bg-purple-500/15 text-purple-400',
+      'Saúde': 'bg-emerald-500/15 text-emerald-400',
+    };
+    return styles[category] ?? 'bg-zinc-500/15 text-zinc-400';
+  }
+
   isInvalid(controlName: string) {
     const control = this.transactionForm.get(controlName);
     return control?.invalid && control?.touched;

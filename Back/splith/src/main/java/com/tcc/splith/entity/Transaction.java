@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Getter
@@ -38,6 +39,7 @@ public class Transaction {
     private String account;
 
     // Alterado de String para relacionamento real com a tabela Group
+    @JsonIgnoreProperties({"members", "hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     private Group group;
